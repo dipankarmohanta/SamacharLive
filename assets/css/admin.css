@@ -73,6 +73,20 @@
 
 .preview-img { max-width: 180px; max-height: 120px; border-radius: 8px; border: 1px solid #e5e7eb; }
 
+/* Collapsible SEO settings section */
+.seo-box { border: 1px solid #e5e7eb; border-radius: 10px; margin-top: 18px; background: #fafbfc; overflow: hidden; }
+.seo-box summary { list-style: none; cursor: pointer; padding: 13px 16px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: .92rem; user-select: none; }
+.seo-box summary::-webkit-details-marker { display: none; }
+.seo-box summary:hover { background: #f1f3f6; }
+.seo-box[open] summary { border-bottom: 1px solid #e5e7eb; }
+.seo-box .seo-summary-icon { color: #c62828; }
+.seo-box .seo-hint { font-weight: 400; color: #6b7280; font-size: .76rem; }
+.seo-box .seo-chevron { margin-left: auto; font-size: .75rem; transition: transform .2s; color: #6b7280; }
+.seo-box[open] .seo-chevron { transform: rotate(180deg); }
+.seo-body { padding: 4px 16px 16px; }
+.seo-check { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.seo-check input { width: auto; }
+
 .pager { display: flex; gap: 6px; justify-content: center; margin-top: 16px; }
 .pager a, .pager span { min-width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; font-size: .82rem; padding: 0 10px; }
 .pager .current { background: #c62828; color: #fff; border-color: #c62828; }

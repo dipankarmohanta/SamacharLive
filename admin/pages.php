@@ -13,14 +13,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $title = trim((string) ($_POST['title'] ?? ''));
         $slug = Security::slugify(trim((string) ($_POST['slug'] ?? '')) ?: $title);
         $content = (string) ($_POST['content'] ?? '');
+        $seoTitle = trim((string) ($_POST['seo_title'] ?? ''));
+        $seoDescription = trim((string) ($_POST['seo_description'] ?? ''));
+        $canonicalUrl = trim((string) ($_POST['canonical_url'] ?? ''));
+        $noindex = isset($_POST['noindex']) ? 1 : 0;
         if ($title === '' || $content === '') {
             flash_set('error', 'Title and content are required.');
         } else {
             if ($id) {
-                DB::run('UPDATE pages SET title=:t, slug=:s, content=:c WHERE id=:id', ['t'=>$title,'s'=>$slug,'c'=>$content,'id'=>$id]);
+                DB::run(
+                    "UPDATE pages SET title=:t, slug=:s, content=:c,
+                     seo_title=:st, seo_description=:sd, canonical_url=:cu, noindex=:ni WHERE id=:id",
+                    ['t'=>$title,'s'=>$slug,'c'=>$content,'id'=>$id,
+                     'st'=>$seoTitle ?: null,'sd'=>$seoDescription ?: null,'cu'=>$canonicalUrl ?: null,'ni'=>$noindex]
+                );
                 flash_set('success', 'Page updated.');
             } else {
-                DB::run('INSERT INTO pages (title, slug, content) VALUES (:t,:s,:c)', ['t'=>$title,'s'=>$slug,'c'=>$content]);
+                DB::run(
+                    "INSERT INTO pages (title, slug, content, seo_title, seo_description, canonical_url, noindex)
+                     VALUES (:t,:s,:c,:st,:sd,:cu,:ni)",
+                    ['t'=>$title,'s'=>$slug,'c'=>$content,
+                     'st'=>$seoTitle ?: null,'sd'=>$seoDescription ?: null,'cu'=>$canonicalUrl ?: null,'ni'=>$noindex]
+                );
                 flash_set('success', 'Page created.');
             }
         }
@@ -67,6 +81,14 @@ require_once __DIR__ . '/includes/layout.php';
     <textarea name="content" class="editor rich-editor" required><?php echo e($editPage['content'] ?? ''); ?></textarea>
     <p class="hint">Visual editor: use the toolbar to format text, add headings, lists, links, images and tables.</p>
     <p class="hint">Page URL will be: /page/your-slug</p>
+
+    <?php
+    $seoVals = $editPage ?? [];
+    $seoShowFocusKeyword = false;
+    $seoShowCanonical = true;
+    require __DIR__ . '/includes/seo_section.php';
+    ?>
+
     <div class="adm-actions">
       <button class="btn" type="submit"><?php echo $editPage ? 'Save' : 'Create Page'; ?></button>
       <?php if ($editPage): ?><a class="btn btn-secondary" href="pages.php">Cancel</a><?php endif; ?>

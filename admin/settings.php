@@ -101,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         Settings::update([
             'seo_meta_description' => trim((string) ($_POST['seo_meta_description'] ?? '')),
             'google_analytics'     => trim((string) ($_POST['google_analytics'] ?? '')),
+            'site_lang'            => preg_replace('/[^a-z0-9\-]/i', '', (string) ($_POST['site_lang'] ?? 'en')) ?: 'en',
         ]);
         flash_set('success', 'SEO settings saved.');
         header('Location: settings.php?tab=seo');
@@ -135,6 +136,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         else { flash_set('error', 'Logo upload failed. Use a valid image under 1MB.'); header('Location: settings.php?tab=general'); exit; }
     }
     if (isset($_POST['remove_logo'])) { $generalValues['site_logo'] = ''; }
+    if (isset($_FILES['favicon']) && $_FILES['favicon']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $favicon = Security::uploadImage($_FILES['favicon'], 'logos', 512);
+        if ($favicon) { $generalValues['site_favicon'] = $favicon; }
+        else { flash_set('error', 'Favicon upload failed. Use a valid image under 512KB.'); header('Location: settings.php?tab=general'); exit; }
+    }
+    if (isset($_POST['remove_favicon'])) { $generalValues['site_favicon'] = ''; }
     $generalValues['maintenance_mode'] = isset($_POST['maintenance_mode']) ? '1' : '0';
     Settings::update($generalValues);
     flash_set('success', 'Site settings saved.');
@@ -189,6 +196,19 @@ require_once __DIR__ . '/includes/layout.php';
           <div class="mt-1" style="display:flex; gap:12px; align-items:center">
             <img class="preview-img" src="/<?php echo e(ltrim(setting('site_logo'), '/')); ?>" alt="logo">
             <label style="display:flex; gap:6px; align-items:center"><input type="checkbox" name="remove_logo" value="1"> Remove logo</label>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Favicon</label>
+        <input type="file" name="favicon" accept=".ico,image/png,image/x-icon,image/svg+xml">
+        <p class="hint">Browser tab icon. Recommended: 32x32 px PNG, ICO, or SVG (max 512KB).</p>
+        <?php if (setting('site_favicon')): ?>
+          <div class="mt-1" style="display:flex; gap:12px; align-items:center">
+            <img src="/<?php echo e(ltrim(setting('site_favicon'), '/')); ?>" alt="favicon" style="width:32px;height:32px;object-fit:contain">
+            <label style="display:flex; gap:6px; align-items:center"><input type="checkbox" name="remove_favicon" value="1"> Remove favicon</label>
           </div>
         <?php endif; ?>
       </div>
@@ -360,6 +380,9 @@ function addMenuRow() {
     <p class="hint">Used on the homepage when no page-specific description exists.</p>
     <label>Google Analytics ID</label>
     <input type="text" name="google_analytics" value="<?php echo e(setting('google_analytics')); ?>" placeholder="G-XXXXXXXXXX">
+    <label>Site Language (html lang + og:locale)</label>
+    <input type="text" name="site_lang" value="<?php echo e(setting('site_lang', 'en')); ?>" placeholder="en">
+    <p class="hint">BCP-47 language tag, e.g. en, hi, or-IN.</p>
     <div class="adm-actions"><button class="btn" type="submit">Save SEO</button></div>
   </form>
 </div>

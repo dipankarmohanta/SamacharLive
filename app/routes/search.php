@@ -36,6 +36,7 @@ if ($q !== '') {
 $pageTitle = 'Search' . ($q ? ': ' . $q : '') . ' | ' . setting('site_name');
 $pageDescription = 'Search news articles on ' . setting('site_name');
 $canonical = site_url('search');
+$noIndex = true;
 
 require BASE_PATH . '/views/header.php';
 ?>

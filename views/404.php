@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>404 - Not Found | <?php echo e(setting('site_name', 'News Portal')); ?></title>
 <link rel="stylesheet" href="<?php echo asset('css/style.css'); ?>">
 </head>

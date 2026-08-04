@@ -15,6 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $description = trim((string) ($_POST['description'] ?? ''));
         $parentId = (int) ($_POST['parent_id'] ?? 0);
         $sortOrder = (int) ($_POST['sort_order'] ?? 0);
+        $seoTitle = trim((string) ($_POST['seo_title'] ?? ''));
+        $seoDescription = trim((string) ($_POST['seo_description'] ?? ''));
+        $noindex = isset($_POST['noindex']) ? 1 : 0;
 
         if ($name === '') {
             flash_set('error', 'Category name is required.');
@@ -30,14 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($id) {
                 DB::run(
                     "UPDATE categories SET name=:n, slug=:s, description=:d, parent_id=:p, sort_order=:o,
-                     image=COALESCE(:i, image) WHERE id=:id",
-                    ['n'=>$name,'s'=>$slug,'d'=>$description,'p'=>$parentId ?: null,'o'=>$sortOrder,'i'=>$image,'id'=>$id]
+                     image=COALESCE(:i, image), seo_title=:st, seo_description=:sd, noindex=:ni WHERE id=:id",
+                    ['n'=>$name,'s'=>$slug,'d'=>$description,'p'=>$parentId ?: null,'o'=>$sortOrder,'i'=>$image,'id'=>$id,
+                     'st'=>$seoTitle ?: null,'sd'=>$seoDescription ?: null,'ni'=>$noindex]
                 );
                 flash_set('success', 'Category updated.');
             } else {
                 DB::run(
-                    "INSERT INTO categories (name, slug, description, image, parent_id, sort_order) VALUES (:n,:s,:d,:i,:p,:o)",
-                    ['n'=>$name,'s'=>$slug,'d'=>$description,'i'=>$image,'p'=>$parentId ?: null,'o'=>$sortOrder]
+                    "INSERT INTO categories (name, slug, description, image, parent_id, sort_order, seo_title, seo_description, noindex)
+                     VALUES (:n,:s,:d,:i,:p,:o,:st,:sd,:ni)",
+                    ['n'=>$name,'s'=>$slug,'d'=>$description,'i'=>$image,'p'=>$parentId ?: null,'o'=>$sortOrder,
+                     'st'=>$seoTitle ?: null,'sd'=>$seoDescription ?: null,'ni'=>$noindex]
                 );
                 flash_set('success', 'Category created.');
             }
@@ -111,6 +117,14 @@ require_once __DIR__ . '/includes/layout.php';
         <input type="file" name="image" accept="image/*">
       </div>
     </div>
+
+    <?php
+    $seoVals = $editCat ?? [];
+    $seoShowFocusKeyword = false;
+    $seoShowCanonical = false;
+    require __DIR__ . '/includes/seo_section.php';
+    ?>
+
     <div class="adm-actions">
       <button class="btn" type="submit"><?php echo $editCat ? 'Save' : 'Add Category'; ?></button>
       <?php if ($editCat): ?><a class="btn btn-secondary" href="categories.php">Cancel</a><?php endif; ?>

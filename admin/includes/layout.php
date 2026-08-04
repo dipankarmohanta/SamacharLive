@@ -9,6 +9,8 @@ $isAdmin = $currentUser['role'] === 'admin';
 $navItems = [
     'dashboard.php'        => ['label' => 'Dashboard', 'icon' => '&#9632;'],
     'news.php'             => ['label' => 'News', 'icon' => '&#128240;'],
+    'news.php?flag=breaking' => ['label' => 'Ticker', 'icon' => '&#128227;'],
+    'news.php?flag=featured' => ['label' => 'Featured', 'icon' => '&#11088;'],
     'news_edit.php'        => ['label' => 'Add News', 'icon' => '&#10133;'],
     'categories.php'       => ['label' => 'Categories', 'icon' => '&#128193;'],
     'epapers.php'          => ['label' => 'Epaper', 'icon' => '&#128218;'],
@@ -18,7 +20,8 @@ $navItems = [
 ];
 $userArea = $_SERVER['SCRIPT_NAME'] ?? '';
 $active = basename($userArea);
-if ($active === 'news_edit.php' && str_contains($userArea, 'news_edit')) { $active = 'news_edit.php'; }
+if ($active === 'news.php' && ($_GET['flag'] ?? '') === 'breaking') { $active = 'news.php?flag=breaking'; }
+if ($active === 'news.php' && ($_GET['flag'] ?? '') === 'featured') { $active = 'news.php?flag=featured'; }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,7 +30,7 @@ if ($active === 'news_edit.php' && str_contains($userArea, 'news_edit')) { $acti
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo e($pageTitle); ?> | <?php echo e(setting('site_name', 'Admin')); ?></title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="<?php echo e(favicon_url()); ?>">
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
@@ -38,7 +41,7 @@ if ($active === 'news_edit.php' && str_contains($userArea, 'news_edit')) { $acti
     <nav>
       <?php foreach ($navItems as $file => $item): ?>
         <?php if (!$isAdmin && in_array($file, ['users.php'], true)) { continue; } ?>
-        <a href="<?php echo e($file); ?>" class="<?php echo $active === $file ? 'active' : ''; ?>">
+        <a href="/admin/<?php echo e($file); ?>" class="<?php echo $active === $file ? 'active' : ''; ?>">
           <?php echo $item['icon']; ?> <span><?php echo $item['label']; ?></span>
         </a>
       <?php endforeach; ?>

@@ -29,11 +29,24 @@ $seoTitle = $cat['seo_title'] ?: $pageTitle;
 $pageDescription = $cat['description'] ?: 'Latest news in ' . $cat['name'];
 $seoDescription = $cat['seo_description'] ?: $pageDescription;
 $noIndex = (bool) $cat['noindex'];
+if ($page > 1) { $noIndex = true; }
 $canonical = site_url('category/' . $cat['slug']);
 if ($page > 1) { $canonical .= '?page=' . $page; }
+$ogImage = $cat['image'] ? site_url('/' . ltrim($cat['image'], '/')) : '';
+$ogImageAlt = $cat['name'];
+
+$breadcrumbJson = json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => site_url()],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => $cat['name'], 'item' => site_url('category/' . $cat['slug'])],
+    ],
+]);
 
 require BASE_PATH . '/views/header.php';
 ?>
+<script type="application/ld+json"><?php echo $breadcrumbJson; ?></script>
 <div class="category-head">
   <div class="container">
     <h1><?php echo e($cat['name']); ?></h1>

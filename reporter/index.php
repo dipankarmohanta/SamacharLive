@@ -17,7 +17,7 @@ require_once __DIR__ . '/includes/layout.php';
 <div class="adm-card">
   <div class="toolbar">
     <p style="color:#6b7280; font-size:.88rem">News you submitted. Published items appear live; new submissions go to the editor for review.</p>
-    <a class="btn" href="add-news.php">&#10133; Add News</a>
+    <a class="btn" href="/reporter/add-news.php">&#10133; Add News</a>
   </div>
   <div class="adm-table-wrap">
   <table class="adm-table data-table">
@@ -34,7 +34,7 @@ require_once __DIR__ . '/includes/layout.php';
         <td><?php echo e(fmt_date($n['created_at'], 'M j, Y')); ?></td>
         <td>
           <?php if (in_array($n['status'], ['draft', 'pending'], true)): ?>
-            <a class="btn btn-secondary btn-sm" href="add-news.php?id=<?php echo (int) $n['id']; ?>">Edit</a>
+            <a class="btn btn-secondary btn-sm" href="/reporter/add-news.php?id=<?php echo (int) $n['id']; ?>">Edit</a>
           <?php else: ?>
             <a class="btn btn-secondary btn-sm" href="/news/<?php echo e($n['slug']); ?>" target="_blank">View</a>
           <?php endif; ?>

@@ -44,22 +44,52 @@ $noIndex = (bool) $item['noindex'];
 $canonical = $item['canonical_url'] ?: site_url('news/' . $item['slug']);
 $ogType = 'article';
 $ogImage = $item['image'] ? site_url('/' . ltrim($item['image'], '/')) : '';
+$ogImageAlt = $item['image_caption'] ?: $item['title'];
+$ogImageWidth = 1200;
+$ogImageHeight = 675;
+$articlePublished = $item['published_at'];
+$articleModified = $item['updated_at'];
+$articleAuthor = $item['display_name'] ?: $item['username'];
+$articleSection = $item['cat_name'] ?? '';
+$articleTags = $tags;
+$siteLang = setting('site_lang', 'en') ?: 'en';
+$publisherLogo = setting('site_logo') ? site_url('/' . ltrim(setting('site_logo'), '/')) : site_url('assets/img/favicon.svg');
+
 $schemaJson = json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'NewsArticle',
     'headline' => $item['seo_title'] ?: $item['title'],
     'description' => $seoDescription,
-    'image' => $ogImage,
+    'image' => $ogImage ?: [$publisherLogo],
     'datePublished' => $item['published_at'],
     'dateModified' => $item['updated_at'],
+    'inLanguage' => $siteLang,
     'author' => ['@type' => 'Person', 'name' => $item['display_name'] ?: $item['username']],
-    'publisher' => ['@type' => 'Organization', 'name' => setting('site_name')],
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => setting('site_name'),
+        'logo' => ['@type' => 'ImageObject', 'url' => $publisherLogo],
+    ],
     'mainEntityOfPage' => $canonical,
+] + array_filter([
+    'articleSection' => $articleSection !== '' ? $articleSection : null,
+    'keywords' => $tags ? implode(', ', $tags) : null,
+]));
+
+$breadcrumbJson = json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => array_values(array_filter([
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => site_url()],
+        $item['cat_name'] ? ['@type' => 'ListItem', 'position' => 2, 'name' => $item['cat_name'], 'item' => site_url('category/' . $item['cat_slug'])] : null,
+        ['@type' => 'ListItem', 'position' => 3, 'name' => $item['title'], 'item' => $canonical],
+    ])),
 ]);
 
 require BASE_PATH . '/views/header.php';
 ?>
 <script type="application/ld+json"><?php echo $schemaJson; ?></script>
+<script type="application/ld+json"><?php echo $breadcrumbJson; ?></script>
 
 <div class="container">
   <article class="article">

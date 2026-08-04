@@ -7,7 +7,9 @@ return [
     'settings' => [
         'site_name'              => 'Samachar Live',
         'site_tagline'           => 'Your Trusted News Partner',
+        'site_lang'              => 'en',
         'site_logo'              => '',
+        'site_favicon'           => '',
         'site_email'             => 'contact@samacharlive.local',
         'site_phone'             => '+91 90000 00000',
         'site_address'           => 'Bhubaneswar, Odisha, India',

@@ -47,9 +47,11 @@ foreach ($cats as $cat) {
 $pageTitle = setting('site_name') . ' - ' . setting('site_tagline');
 $pageDescription = setting('seo_meta_description');
 $ogImage = $hero && $hero['image'] ? site_url('/' . ltrim($hero['image'], '/')) : '';
+$ogImageAlt = $hero ? $hero['title'] : '';
 
 require BASE_PATH . '/views/header.php';
 ?>
+<h1 class="sr-only"><?php echo e($pageTitle); ?></h1>
 <div class="hero">
   <div class="container">
     <div class="hero-grid">

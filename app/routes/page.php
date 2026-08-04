@@ -24,9 +24,19 @@ $schemaJson = json_encode([
     'mainEntity' => ['@type' => 'WebPageElement', 'headline' => $page['title']],
 ]);
 
+$breadcrumbJson = json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => site_url()],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => $page['title'], 'item' => $canonical],
+    ],
+]);
+
 require BASE_PATH . '/views/header.php';
 ?>
 <script type="application/ld+json"><?php echo $schemaJson; ?></script>
+<script type="application/ld+json"><?php echo $breadcrumbJson; ?></script>
 <div class="container">
   <article class="page-content">
     <nav class="breadcrumb"><a href="/">Home</a> &raquo; <?php echo e($page['title']); ?></nav>

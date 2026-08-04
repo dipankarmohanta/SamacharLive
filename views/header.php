@@ -14,8 +14,19 @@ $noIndex = !empty($noIndex);
 $metaKeywords = trim((string) ($metaKeywords ?? ''));
 $canonical = $canonical ?? site_url();
 $ogType = $ogType ?? 'website';
+$ogImage = $ogImage ?? '';
+$ogImageAlt = $ogImageAlt ?? '';
+$ogImageWidth = (int) ($ogImageWidth ?? 1200);
+$ogImageHeight = (int) ($ogImageHeight ?? 630);
+$articlePublished = $articlePublished ?? '';
+$articleModified = $articleModified ?? '';
+$articleAuthor = $articleAuthor ?? '';
+$articleSection = $articleSection ?? '';
+$articleTags = (array) ($articleTags ?? []);
 
 $siteName = setting('site_name', 'News Portal');
+$siteLang = setting('site_lang', 'en') ?: 'en';
+$ogLocale = str_replace('-', '_', $siteLang);
 $tagline = setting('site_tagline', '');
 $logo = setting('site_logo');
 $headerStyle = setting('header_style', 'center');
@@ -32,26 +43,41 @@ $menuTree = menu_tree();
 $today = date('l, F j, Y');
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo e($siteLang); ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo e($seoTitle); ?></title>
-<meta name="description" content="<?php echo e($seoDescription); ?>">
+<meta name="description" content="<?php echo e(meta_desc($seoDescription)); ?>">
 <?php if ($metaKeywords !== ''): ?><meta name="keywords" content="<?php echo e($metaKeywords); ?>"><?php endif; ?>
 <link rel="canonical" href="<?php echo e($canonical); ?>">
 <meta name="robots" content="<?php echo $noIndex ? 'noindex, nofollow' : 'index, follow'; ?>">
 <meta name="theme-color" content="<?php echo e(setting('theme_primary', '#c62828')); ?>">
 <meta property="og:site_name" content="<?php echo e($siteName); ?>">
 <meta property="og:type" content="<?php echo e($ogType); ?>">
+<meta property="og:locale" content="<?php echo e($ogLocale); ?>">
 <meta property="og:title" content="<?php echo e($seoTitle); ?>">
-<meta property="og:description" content="<?php echo e($seoDescription); ?>">
+<meta property="og:description" content="<?php echo e(meta_desc($seoDescription)); ?>">
 <meta property="og:url" content="<?php echo e($canonical); ?>">
-<?php if (!empty($ogImage)): ?><meta property="og:image" content="<?php echo e($ogImage); ?>"><?php endif; ?>
-<meta name="twitter:card" content="summary_large_image">
+<?php if ($ogImage !== ''): ?>
+<meta property="og:image" content="<?php echo e($ogImage); ?>">
+<meta property="og:image:alt" content="<?php echo e($ogImageAlt); ?>">
+<meta property="og:image:width" content="<?php echo (int) $ogImageWidth; ?>">
+<meta property="og:image:height" content="<?php echo (int) $ogImageHeight; ?>">
+<?php endif; ?>
+<?php if ($ogType === 'article'): ?>
+<?php if ($articlePublished !== ''): ?><meta property="article:published_time" content="<?php echo e($articlePublished); ?>"><?php endif; ?>
+<?php if ($articleModified !== ''): ?><meta property="article:modified_time" content="<?php echo e($articleModified); ?>"><?php endif; ?>
+<?php if ($articleAuthor !== ''): ?><meta property="article:author" content="<?php echo e($articleAuthor); ?>"><?php endif; ?>
+<?php if ($articleSection !== ''): ?><meta property="article:section" content="<?php echo e($articleSection); ?>"><?php endif; ?>
+<?php foreach ($articleTags as $tag): ?><meta property="article:tag" content="<?php echo e($tag); ?>"><?php endforeach; ?>
+<?php endif; ?>
+<meta name="twitter:card" content="<?php echo $ogImage !== '' ? 'summary_large_image' : 'summary'; ?>">
 <meta name="twitter:title" content="<?php echo e($seoTitle); ?>">
-<meta name="twitter:description" content="<?php echo e($seoDescription); ?>">
-<link rel="icon" href="<?php echo asset('img/favicon.svg'); ?>" type="image/svg+xml">
+<meta name="twitter:description" content="<?php echo e(meta_desc($seoDescription)); ?>">
+<?php if ($ogImage !== ''): ?><meta name="twitter:image" content="<?php echo e($ogImage); ?>"><?php endif; ?>
+<link rel="icon" href="<?php echo e(favicon_url()); ?>">
+<link rel="apple-touch-icon" href="<?php echo e(favicon_url()); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">

@@ -25,6 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoryId = (int) ($_POST['category_id'] ?? 0);
     $tags = trim((string) ($_POST['tags'] ?? ''));
     $imageCaption = trim((string) ($_POST['image_caption'] ?? ''));
+    $seoTitle = trim((string) ($_POST['seo_title'] ?? ''));
+    $seoDescription = trim((string) ($_POST['seo_description'] ?? ''));
+    $focusKeyword = trim((string) ($_POST['focus_keyword'] ?? ''));
 
     if ($title === '') { $errors[] = 'Title is required.'; }
     if ($content === '') { $errors[] = 'Content is required.'; }
@@ -45,17 +48,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id) {
             DB::run(
                 "UPDATE news SET title=:t, slug=:s, excerpt=:e, content=:c, image=:img, image_caption=:ic,
-                 category_id=:cid, tags=:tg WHERE id=:id",
+                 category_id=:cid, tags=:tg, seo_title=:st, seo_description=:sd, focus_keyword=:fk WHERE id=:id",
                 ['t'=>$title,'s'=>$slug,'e'=>$excerpt,'c'=>$content,'img'=>$removeImage ? null : $image,'ic'=>$imageCaption,
-                 'cid'=>$categoryId ?: null,'tg'=>$tags,'id'=>$id]
+                 'cid'=>$categoryId ?: null,'tg'=>$tags,'id'=>$id,
+                 'st'=>$seoTitle ?: null,'sd'=>$seoDescription ?: null,'fk'=>$focusKeyword ?: null]
             );
             flash_set('success', 'News updated. It remains under review until an editor publishes it.');
         } else {
             DB::run(
-                "INSERT INTO news (title, slug, excerpt, content, image, image_caption, category_id, author_id, tags, status)
-                 VALUES (:t,:s,:e,:c,:img,:ic,:cid,:aid,:tg,'pending')",
+                "INSERT INTO news (title, slug, excerpt, content, image, image_caption, category_id, author_id, tags, status,
+                 seo_title, seo_description, focus_keyword)
+                 VALUES (:t,:s,:e,:c,:img,:ic,:cid,:aid,:tg,'pending',:st,:sd,:fk)",
                 ['t'=>$title,'s'=>$slug,'e'=>$excerpt,'c'=>$content,'img'=>$removeImage ? null : $image,'ic'=>$imageCaption,
-                 'cid'=>$categoryId ?: null,'aid'=>$currentUser['id'],'tg'=>$tags]
+                 'cid'=>$categoryId ?: null,'aid'=>$currentUser['id'],'tg'=>$tags,
+                 'st'=>$seoTitle ?: null,'sd'=>$seoDescription ?: null,'fk'=>$focusKeyword ?: null]
             );
             flash_set('success', 'News submitted for review. An editor will publish it after approval.');
         }
@@ -123,6 +129,13 @@ require_once __DIR__ . '/includes/layout.php';
         <input type="text" id="image_caption" name="image_caption" value="<?php echo e($news['image_caption'] ?? $_POST['image_caption'] ?? ''); ?>">
       </div>
     </div>
+
+    <?php
+    $seoVals = $news ?? [];
+    $seoShowFocusKeyword = true;
+    $seoShowCanonical = false;
+    require __DIR__ . '/../admin/includes/seo_section.php';
+    ?>
 
     <div class="adm-actions">
       <button type="submit" class="btn"><?php echo $id ? 'Save Changes' : 'Submit for Review'; ?></button>

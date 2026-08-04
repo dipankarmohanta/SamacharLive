@@ -17,7 +17,7 @@ $active = basename($_SERVER['SCRIPT_NAME']);
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo e($pageTitle); ?> | <?php echo e(setting('site_name', 'Reporter')); ?></title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="<?php echo e(favicon_url()); ?>">
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
@@ -27,7 +27,7 @@ $active = basename($_SERVER['SCRIPT_NAME']);
     <div class="brand"><?php echo e(setting('site_name', 'News')); ?> <span>Reporter</span></div>
     <nav>
       <?php foreach ($navItems as $file => $item): ?>
-        <a href="<?php echo e($file); ?>" class="<?php echo $active === $file ? 'active' : ''; ?>">
+        <a href="/reporter/<?php echo e($file); ?>" class="<?php echo $active === $file ? 'active' : ''; ?>">
           <?php echo $item['icon']; ?> <span><?php echo $item['label']; ?></span>
         </a>
       <?php endforeach; ?>

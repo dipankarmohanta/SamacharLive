@@ -161,6 +161,13 @@ require_once __DIR__ . '/includes/layout.php';
       <label style="display:flex; gap:6px; align-items:center"><input type="checkbox" name="breaking" value="1" <?php echo ($news['breaking'] ?? 0) ? 'checked' : ''; ?>> Breaking / Ticker</label>
     </div>
 
+    <?php
+    $seoVals = $news ?? [];
+    $seoShowFocusKeyword = true;
+    $seoShowCanonical = true;
+    require __DIR__ . '/includes/seo_section.php';
+    ?>
+
     <div class="adm-actions">
       <button type="submit" class="btn"><?php echo $id ? 'Save Changes' : 'Create News'; ?></button>
       <a href="news.php" class="btn btn-secondary">Cancel</a>

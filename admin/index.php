@@ -6,7 +6,7 @@ require_once __DIR__ . '/../app/bootstrap.php';
 Auth::start();
 
 if (Auth::id()) {
-    header('Location: dashboard.php');
+    header('Location: /admin/dashboard.php');
     exit;
 }
 
@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($error === null) {
             $role = $_SESSION['role'] ?? 'reporter';
             if ($role === 'reporter') {
-                header('Location: ../reporter/index.php');
+                header('Location: /reporter/index.php');
             } else {
-                header('Location: dashboard.php');
+                header('Location: /admin/dashboard.php');
             }
             exit;
         }
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Login | <?php echo e(setting('site_name', 'News Portal')); ?></title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="<?php echo e(favicon_url()); ?>">
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <h1>Sign In</h1>
   <p class="sub">Access the administration dashboard</p>
   <?php if ($error): ?><div class="alert alert-error"><?php echo e($error); ?></div><?php endif; ?>
-  <form method="post" action="index.php" autocomplete="off">
+  <form method="post" action="/admin/index.php" autocomplete="off">
     <?php echo Security::csrfField(); ?>
     <label for="username">Username or Email</label>
     <input type="text" id="username" name="username" value="<?php echo e($_POST['username'] ?? 'admin'); ?>" required autofocus>

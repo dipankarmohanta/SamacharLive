@@ -26,6 +26,7 @@ $stories = DB::fetchAll(
 $pageTitle = '#' . $tag . ' | ' . setting('site_name');
 $pageDescription = 'Articles tagged with #' . $tag . ' on ' . setting('site_name');
 $canonical = site_url('tag/' . $tag);
+$noIndex = $page > 1;
 
 require BASE_PATH . '/views/header.php';
 ?>

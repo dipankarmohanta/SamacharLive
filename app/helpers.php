@@ -21,6 +21,24 @@ function asset(string $path): string
     return '/assets/' . ltrim($path, '/');
 }
 
+/** URL for the site favicon (uploaded setting or the bundled default). */
+function favicon_url(): string
+{
+    $fav = setting('site_favicon');
+    if ($fav) {
+        return '/' . ltrim($fav, '/');
+    }
+    return asset('img/favicon.svg');
+}
+
+/** Normalize text for a meta description (single line, ~160 chars). */
+function meta_desc(?string $text, int $limit = 160): string
+{
+    $text = trim((string) $text);
+    $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
+    return Security::truncate($text, $limit, '');
+}
+
 /** Site URL for a route path. */
 function site_url(string $path = ''): string
 {
