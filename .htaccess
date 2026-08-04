@@ -1,0 +1,57 @@
+# News Portal - Apache configuration
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_php.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 70M
+    php_value max_execution_time 120
+    php_value memory_limit 256M
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS (enable when SSL is configured)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Block dotfiles
+    RewriteRule (^\.|/\.) - [F]
+
+    # Route everything else through the front controller
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Static asset caching (PHP pages send their own security headers)
+    <FilesMatch "\.(css|js|webp|png|jpg|jpeg|gif|svg|ico|woff2?)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# Prevent execution of scripts in uploads
+<IfModule mod_php.c>
+    <FilesMatch "\.(php|phtml|php\d)$">
+        <If "%{REQUEST_URI} =~ m#/uploads/#">
+            Require all denied
+        </If>
+    </FilesMatch>
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# Long-term caching of immutable hashed assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+</IfModule>

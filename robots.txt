@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /reporter/
+Disallow: /app/
+Disallow: /uploads/
+Disallow: /config.php
+Disallow: /*?page=
+
+# Update with your production domain after deployment:
+# Sitemap: https://www.yourdomain.com/sitemap

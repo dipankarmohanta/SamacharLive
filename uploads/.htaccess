@@ -1,0 +1,15 @@
+# Never execute scripts from uploads
+<FilesMatch "\.(php|php3|php4|php5|php7|phtml|pht|phar|cgi|pl|py|sh|asp|aspx|jsp)$">
+    Require all denied
+</FilesMatch>
+
+# No directory listing
+Options -Indexes
+
+# Cache images long-term
+<IfModule mod_headers.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|pdf)$">
+        Header set Cache-Control "public, max-age=2592000"
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+</IfModule>
