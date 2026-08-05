@@ -32,7 +32,7 @@ if ($active === 'news.php' && ($_GET['flag'] ?? '') === 'featured') { $active = 
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="<?php echo e(favicon_url()); ?>">
 <link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/admin.css">
+<link rel="stylesheet" href="/assets/css/admin.css?v=20260805">
 </head>
 <body class="adm-body">
 <div class="adm-wrapper">

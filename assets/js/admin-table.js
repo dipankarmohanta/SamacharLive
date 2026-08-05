@@ -18,7 +18,6 @@
     var wrap = document.createElement('div');
     wrap.className = 'dt-wrap';
     table.parentNode.insertBefore(wrap, table);
-    wrap.appendChild(table);
 
     var controls = document.createElement('div');
     controls.className = 'dt-controls';
@@ -45,14 +44,20 @@
     controls.appendChild(searchBox);
 
     wrap.appendChild(controls);
+    wrap.appendChild(table);
+
+    var footer = document.createElement('div');
+    footer.className = 'dt-footer';
 
     var info = document.createElement('div');
     info.className = 'dt-info';
-    wrap.appendChild(info);
+    footer.appendChild(info);
 
     var pager = document.createElement('div');
     pager.className = 'dt-pager';
-    wrap.appendChild(pager);
+    footer.appendChild(pager);
+
+    wrap.appendChild(footer);
 
     var headers = Array.prototype.slice.call(table.querySelectorAll('thead th'));
     headers.forEach(function (th, idx) {

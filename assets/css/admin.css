@@ -164,8 +164,9 @@
 .dt-length select { padding: 5px 8px; border: 1px solid #d9dce3; border-radius: 6px; font-size: .82rem; background: #fff; }
 .dt-search { padding: 7px 12px; border: 1px solid #d9dce3; border-radius: 8px; font-size: .86rem; min-width: 220px; outline: none; }
 .dt-search:focus { border-color: #c62828; box-shadow: 0 0 0 3px rgba(198,40,40,.1); }
-.dt-info { font-size: .78rem; color: #6b7280; margin-top: 10px; }
-.dt-pager { display: flex; gap: 6px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.dt-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.dt-info { font-size: .78rem; color: #6b7280; white-space: nowrap; }
+.dt-pager { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .dt-btn { min-width: 30px; height: 30px; padding: 0 8px; border: 1px solid #d9dce3; background: #fff; border-radius: 6px; font-size: .82rem; cursor: pointer; transition: all .15s; }
 .dt-btn:hover:not(.disabled):not(.current) { border-color: #c62828; color: #c62828; }
 .dt-btn.current { background: #c62828; border-color: #c62828; color: #fff; font-weight: 600; }
@@ -183,4 +184,12 @@ thead th.sortable.desc::after { content: '\2193'; opacity: 1; color: #c62828; }
   .adm-sidebar nav a { justify-content: center; padding: 12px; }
   .adm-form .row, .adm-form .row-3, .adm-form .row-4 { grid-template-columns: 1fr; }
   .adm-table-wrap { overflow-x: auto; }
+}
+
+@media (max-width: 640px) {
+  .dt-controls { flex-direction: column; align-items: stretch; gap: 8px; }
+  .dt-search { width: 100%; min-width: 0; }
+  .dt-footer { flex-direction: column; align-items: center; gap: 8px; }
+  .dt-info { white-space: normal; text-align: center; }
+  .dt-pager { justify-content: center; }
 }
