@@ -17,57 +17,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!in_array($tab, $allowedTabs, true)) { $tab = 'general'; }
 
     if ($tab === 'menu') {
-        // Existing items: parallel arrays by row index
-        $ids     = (array) ($_POST['mid'] ?? []);
-        $labels  = (array) ($_POST['mlabel'] ?? []);
-        $urls    = (array) ($_POST['murl'] ?? []);
-        $parents = (array) ($_POST['mparent'] ?? []);
-        $orders  = (array) ($_POST['morder'] ?? []);
-        // New items
-        $labelsNew  = (array) ($_POST['nlabel'] ?? []);
-        $urlsNew    = (array) ($_POST['nurl'] ?? []);
-        $parentsNew = (array) ($_POST['nparent'] ?? []);
-        $ordersNew  = (array) ($_POST['norder'] ?? []);
+        $raw = trim((string) ($_POST['menu_tree'] ?? ''));
+        $nodes = json_decode($raw, true);
+        if (!is_array($nodes)) {
+            flash_set('error', 'Invalid menu data. Please try again.');
+            header('Location: settings.php?tab=menu');
+            exit;
+        }
+
+        $maxDepth = 3;
+        $maxItems = 200;
+        $count = 0;
+
+        $sanitizeUrl = static function (string $url): string {
+            $url = trim($url);
+            if ($url === '' || $url === '#') { return '#'; }
+            if (preg_match('~^https?://~i', $url)) { return $url; }
+            if (str_starts_with($url, '/') && !str_starts_with($url, '//')) { return $url; }
+            return '#';
+        };
 
         DB::run('DELETE FROM menus');
-        $insert = DB::conn()->prepare('INSERT INTO menus (label, url, sort_order) VALUES (:l, :u, :o)');
-        $mapping = []; // old_id => new_id
-        $records = []; // new_id => [parent_old_id]
+        $insert = DB::conn()->prepare('INSERT INTO menus (label, url, parent_id, sort_order) VALUES (:l, :u, :p, :o)');
 
-        foreach ($labels as $i => $label) {
-            $label = trim((string) $label);
-            if ($label === '') { continue; }
-            $insert->execute([
-                'l' => $label,
-                'u' => trim((string) ($urls[$i] ?? '')) ?: '#',
-                'o' => (int) ($orders[$i] ?? 0),
-            ]);
-            $newId = (int) DB::conn()->lastInsertId();
-            $oldId = (int) ($ids[$i] ?? 0);
-            if ($oldId > 0) { $mapping[$oldId] = $newId; }
-            $records[$newId] = (int) ($parents[$i] ?? 0);
-        }
-        foreach ($labelsNew as $i => $label) {
-            $label = trim((string) $label);
-            if ($label === '') { continue; }
-            $insert->execute([
-                'l' => $label,
-                'u' => trim((string) ($urlsNew[$i] ?? '')) ?: '#',
-                'o' => (int) ($ordersNew[$i] ?? 99),
-            ]);
-            $newId = (int) DB::conn()->lastInsertId();
-            $records[$newId] = (int) ($parentsNew[$i] ?? 0);
-        }
-
-        // Resolve parents: map old ids to new ids, ignore unresolved/self refs
-        $update = DB::conn()->prepare('UPDATE menus SET parent_id = :p WHERE id = :id');
-        foreach ($records as $newId => $parentOld) {
-            $resolved = 0;
-            if ($parentOld > 0 && isset($mapping[$parentOld])) {
-                $resolved = $mapping[$parentOld] === $newId ? 0 : $mapping[$parentOld];
+        $insertNodes = function (array $nodes, int $parentId, int $depth, int &$order) use (&$insertNodes, $insert, $sanitizeUrl, &$count, $maxDepth, $maxItems): void {
+            foreach ($nodes as $node) {
+                if ($count >= $maxItems) { return; }
+                $label = trim((string) ($node['label'] ?? ''));
+                if ($label === '') { continue; }
+                $label = mb_substr($label, 0, 100);
+                $url = $sanitizeUrl((string) ($node['url'] ?? ''));
+                $insert->execute(['l' => $label, 'u' => $url, 'p' => $parentId, 'o' => $order++]);
+                $count++;
+                $newId = (int) DB::conn()->lastInsertId();
+                $children = (array) ($node['children'] ?? []);
+                if ($children && $depth < $maxDepth) {
+                    $insertNodes($children, $newId, $depth + 1, $order);
+                }
             }
-            $update->execute(['p' => $resolved, 'id' => $newId]);
-        }
+        };
+
+        $order = 0;
+        $insertNodes($nodes, 0, 1, $order);
 
         flash_set('success', 'Navigation menu updated.');
         header('Location: settings.php?tab=menu');
@@ -89,7 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $themeValues = [];
         foreach ($colorFields as $f) { $themeValues[$f] = trim((string) ($_POST[$f] ?? '')); }
-        $themeValues['header_style'] = ($_POST['header_style'] ?? 'center') === 'left' ? 'left' : 'center';
+        $headerPresets = ['classic', 'modern', 'compact'];
+        $footerPresets = ['classic', 'minimal', 'rich'];
+        $themeValues['header_style'] = in_array(($_POST['header_style'] ?? 'classic'), $headerPresets, true) ? $_POST['header_style'] : 'classic';
+        $themeValues['footer_style'] = in_array(($_POST['footer_style'] ?? 'classic'), $footerPresets, true) ? $_POST['footer_style'] : 'classic';
         $themeValues['header_breaking'] = isset($_POST['header_breaking']) ? '1' : '0';
         Settings::update($themeValues);
         flash_set('success', 'Theme settings saved. The public site updates immediately.');
@@ -149,7 +143,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$menuItems = DB::fetchAll('SELECT * FROM menus ORDER BY sort_order ASC, id ASC');
 $pageTitle = 'Settings';
 require_once __DIR__ . '/includes/layout.php';
 ?>
@@ -222,9 +215,65 @@ require_once __DIR__ . '/includes/layout.php';
 <?php endif; ?>
 
 <?php if ($activeTab === 'theme'): ?>
+<?php
+    $headerPresets = [
+        'classic' => [
+            'name' => 'Classic',
+            'desc' => 'Top bar, centered logo, full-width menu bar.',
+            'thumb' => '<span class="pt-topbar"></span><span class="pt-header"><span class="pt-logo pt-logo-center"></span><span class="pt-actions"></span></span><span class="pt-nav"></span>',
+        ],
+        'modern' => [
+            'name' => 'Modern',
+            'desc' => 'Slim sticky row: logo left, inline menu, search right.',
+            'thumb' => '<span class="pt-header"><span class="pt-logo"></span><span class="pt-inline-nav"></span><span class="pt-actions"></span></span>',
+        ],
+        'compact' => [
+            'name' => 'Compact',
+            'desc' => 'Thin top bar, tight header and compact menu.',
+            'thumb' => '<span class="pt-topbar"></span><span class="pt-header pt-header-sm"><span class="pt-logo"></span><span class="pt-actions"></span></span><span class="pt-nav pt-nav-sm"></span>',
+        ],
+    ];
+    $footerPresets = [
+        'classic' => [
+            'name' => 'Classic',
+            'desc' => 'Four-column footer grid.',
+            'thumb' => '<span class="pt-footer"><span class="pt-f-col pt-f-col1"></span><span class="pt-f-col"></span><span class="pt-f-col"></span><span class="pt-f-col"></span></span>',
+        ],
+        'minimal' => [
+            'name' => 'Minimal',
+            'desc' => 'Centered brand, tagline, social and copyright.',
+            'thumb' => '<span class="pt-footer pt-footer-min"><span class="pt-f-brand"></span><span class="pt-f-social"></span></span>',
+        ],
+        'rich' => [
+            'name' => 'Rich',
+            'desc' => 'Newsletter signup plus columns and social row.',
+            'thumb' => '<span class="pt-footer pt-footer-rich"><span class="pt-f-news"></span><span class="pt-f-row"><span class="pt-f-col pt-f-col1"></span><span class="pt-f-col"></span><span class="pt-f-col"></span></span></span>',
+        ],
+    ];
+
+    function themePresetPicker(string $field, string $current, array $presets): void
+    {
+        echo '<div class="preset-grid">';
+        foreach ($presets as $key => $p) {
+            $active = $current === $key ? ' active' : '';
+            echo '<label class="preset-card' . $active . '">';
+            echo '<input type="radio" name="' . e($field) . '" value="' . e($key) . '"' . ($active ? ' checked' : '') . '>';
+            echo '<span class="preset-thumb">' . $p['thumb'] . '</span>';
+            echo '<span class="preset-name">' . e($p['name']) . '</span>';
+            echo '<span class="preset-desc">' . e($p['desc']) . '</span>';
+            echo '</label>';
+        }
+        echo '</div>';
+    }
+
+    $curHeader = setting('header_style', 'classic');
+    if (!isset($headerPresets[$curHeader])) { $curHeader = 'classic'; }
+    $curFooter = setting('footer_style', 'classic');
+    if (!isset($footerPresets[$curFooter])) { $curFooter = 'classic'; }
+?>
 <div class="adm-card">
   <h2>Theme Customization</h2>
-  <p style="color:#6b7280; font-size:.85rem; margin-bottom:14px">Choose your brand colors. Changes apply to the whole public site instantly.</p>
+  <p style="color:#6b7280; font-size:.85rem; margin-bottom:14px">Pick a header and footer design, then tune your brand colors. Changes apply to the whole public site instantly.</p>
   <form method="post" class="adm-form">
     <?php echo Security::csrfField(); ?>
     <input type="hidden" name="tab" value="theme">
@@ -245,20 +294,13 @@ require_once __DIR__ . '/includes/layout.php';
         <p class="hint">Breaking ticker, highlights</p>
       </div>
     </div>
-    <div class="row-3">
-      <div>
-        <label>Header Layout</label>
-        <select name="header_style">
-          <option value="center" <?php echo setting('header_style') === 'center' ? 'selected' : ''; ?>>Centered</option>
-          <option value="left" <?php echo setting('header_style') === 'left' ? 'selected' : ''; ?>>Left aligned</option>
-        </select>
-      </div>
-      <div>
-        <label style="display:flex; gap:8px; align-items:center; margin-top:30px">
-          <input type="checkbox" name="header_breaking" value="1" <?php echo setting('header_breaking', '1') ? 'checked' : ''; ?>> Show breaking news ticker
-        </label>
-      </div>
-    </div>
+    <label>Header Design</label>
+    <?php themePresetPicker('header_style', $curHeader, $headerPresets); ?>
+    <label>Footer Design</label>
+    <?php themePresetPicker('footer_style', $curFooter, $footerPresets); ?>
+    <label style="display:flex; gap:8px; align-items:center; margin-top:18px">
+      <input type="checkbox" name="header_breaking" value="1" <?php echo setting('header_breaking', '1') ? 'checked' : ''; ?>> Show breaking news ticker
+    </label>
     <div class="adm-actions"><button class="btn" type="submit">Save Theme</button></div>
   </form>
 </div>
@@ -273,100 +315,119 @@ require_once __DIR__ . '/includes/layout.php';
 <?php
     $allMenuItems = DB::fetchAll('SELECT * FROM menus ORDER BY sort_order ASC, id ASC');
 
-    // Build id => item map plus per-id list of descendants (for cycle-safe parent options)
-    $menuIndex = [];
-    foreach ($allMenuItems as $mi) { $menuIndex[(int) $mi['id']] = $mi; }
-    $descendants = [];
-    foreach ($allMenuItems as $mi) { $descendants[(int) $mi['id']] = []; }
-    $depthMap = [];
-    foreach ($allMenuItems as $mi) {
-        $id = (int) $mi['id'];
-        $d = 0;
-        $pid = (int) $mi['parent_id'];
-        while ($pid > 0 && isset($menuIndex[$pid]) && $d < 20) {
-            $d++;
-            $pid = (int) $menuIndex[$pid]['parent_id'];
+    // Build nested menu tree (pre-order) for the builder DOM.
+    $menuById = [];
+    foreach ($allMenuItems as $mi) { $menuById[(int) $mi['id']] = $mi; }
+    $menuChildren = [];
+    foreach ($allMenuItems as $mi) { $menuChildren[(int) $mi['parent_id']][] = $mi; }
+
+    function menuBuilderNodes(array $items): array
+    {
+        $nodes = [];
+        foreach ($items as $mi) {
+            $node = [
+                'key' => (int) $mi['id'],
+                'label' => $mi['label'],
+                'url' => $mi['url'],
+                'children' => [],
+            ];
+            global $menuChildren;
+            if (isset($menuChildren[(int) $mi['id']])) {
+                $node['children'] = menuBuilderNodes($menuChildren[(int) $mi['id']]);
+            }
+            $nodes[] = $node;
         }
-        $depthMap[$id] = $d;
+        return $nodes;
     }
-    foreach ($allMenuItems as $mi) {
-        $id = (int) $mi['id'];
-        $pid = (int) $mi['parent_id'];
-        while ($pid > 0 && isset($menuIndex[$pid])) {
-            $descendants[$pid][] = $id;
-            $pid = (int) $menuIndex[$pid]['parent_id'];
+
+    function menuBuilderDom(array $nodes): void
+    {
+        foreach ($nodes as $node) {
+            $children = (array) ($node['children'] ?? []);
+            echo '<li class="menu-builder-item" data-key="' . e((string) $node['key']) . '">';
+            echo '<div class="menu-builder-bar">';
+            echo '<span class="menu-builder-drag" aria-label="Drag to reorder">&#9776;</span>';
+            echo '<span class="menu-builder-label">' . e((string) $node['label']) . '</span>';
+            echo '<span class="menu-builder-url">' . e((string) $node['url']) . '</span>';
+            echo '<span class="menu-builder-actions">';
+            echo '<button type="button" class="btn btn-secondary btn-sm nb-edit">Edit</button>';
+            echo '<button type="button" class="btn btn-secondary btn-sm nb-in" title="Make a sub-menu of the item above">Indent</button>';
+            echo '<button type="button" class="btn btn-secondary btn-sm nb-out" title="Move out of its sub-menu">Outdent</button>';
+            echo '<button type="button" class="btn btn-danger btn-sm nb-remove">Remove</button>';
+            echo '</span>';
+            echo '</div>';
+            echo '<ol class="menu-builder-sub">';
+            if ($children) { menuBuilderDom($children); }
+            echo '</ol>';
+            echo '</li>';
         }
     }
 
-    function menuParentOptions(array $menuItems, array $depthMap, array $descendants, array $excludeIds): string
-    {
-        $out = '<option value="0">— Top Level —</option>';
-        foreach ($menuItems as $mi) {
-            $id = (int) $mi['id'];
-            if (in_array($id, $excludeIds, true)) { continue; }
-            $pad = str_repeat('&nbsp;&nbsp;&nbsp;', $depthMap[$id]);
-            $out .= '<option value="' . $id . '">' . $pad . e($mi['label']) . '</option>';
-        }
-        return $out;
-    }
+    $menuTreeNodes = menuBuilderNodes($menuChildren[0] ?? []);
+
+    $pages = DB::fetchAll('SELECT id, title, slug FROM pages WHERE status = 1 ORDER BY title ASC');
+    $cats = DB::fetchAll('SELECT id, name, slug FROM categories WHERE status = 1 ORDER BY name ASC');
+    $sourceData = json_encode([
+        'pages' => array_map(fn($p) => ['name' => $p['title'], 'slug' => $p['slug']], $pages),
+        'categories' => array_map(fn($c) => ['name' => $c['name'], 'slug' => $c['slug']], $cats),
+    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 ?>
 <div class="adm-card">
   <h2>Navigation Menu</h2>
-  <p style="color:#6b7280; font-size:.85rem; margin-bottom:14px">Build a hierarchical menu like WordPress: set a "Parent" item to turn a menu entry into a drop-down sub-menu. Order numbers sort sibling items. Categories are appended automatically at the top level.</p>
-  <form method="post" class="adm-form">
+  <p style="color:#6b7280; font-size:.85rem; margin-bottom:14px">Build a menu like WordPress: drag items to reorder, or drag one item into another to make it a drop-down sub-menu. Use the Indent/Outdent buttons as a keyboard-friendly alternative.</p>
+  <form method="post" id="menu-builder-form" class="adm-form">
     <?php echo Security::csrfField(); ?>
     <input type="hidden" name="tab" value="menu">
-    <label>Current Menu Items</label>
-    <div id="menu-rows">
-      <?php foreach ($menuItems as $item): ?>
-      <div class="menu-row menu-grid">
-        <input type="hidden" name="mid[]" value="<?php echo (int) $item['id']; ?>">
-        <input type="text" name="mlabel[]" value="<?php echo e($item['label']); ?>" placeholder="Label">
-        <input type="text" name="murl[]" value="<?php echo e($item['url']); ?>" placeholder="/page/about or https://...">
-        <select name="mparent[]" title="Parent item">
-          <?php
-            $ex = [$item['id']];
-            if (isset($descendants[$item['id']])) { $ex = array_merge($ex, $descendants[$item['id']]); }
-            echo menuParentOptions($allMenuItems, $depthMap, $descendants, $ex);
-          ?>
-        </select>
-        <input type="number" name="morder[]" value="<?php echo (int) $item['sort_order']; ?>" style="width:70px" title="Order">
-        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">Remove</button>
+    <input type="hidden" name="menu_tree" id="menu_tree" value="">
+    <div class="nav-builder">
+      <div class="nav-builder-panel">
+        <h3>Add Menu Items</h3>
+
+        <label class="nb-label">Custom Link</label>
+        <input type="text" id="nb-custom-label" placeholder="Label (e.g. About)">
+        <input type="text" id="nb-custom-url" placeholder="URL (/page/about or https://...)" style="margin-top:6px">
+        <button type="button" class="btn btn-sm nb-add" id="nb-add-custom">+ Add to Menu</button>
+
+        <label class="nb-label">Pages</label>
+        <div class="nb-source-list" id="nb-pages-list">
+          <?php if ($pages): ?>
+            <?php foreach ($pages as $i => $p): ?>
+              <label><input type="checkbox" value="<?php echo $i; ?>"> <?php echo e($p['title']); ?></label>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p class="hint">No pages yet.</p>
+          <?php endif; ?>
+        </div>
+        <?php if ($pages): ?><button type="button" class="btn btn-sm nb-add" id="nb-add-pages">Add Selected</button><?php endif; ?>
+
+        <label class="nb-label">Categories</label>
+        <div class="nb-source-list" id="nb-cats-list">
+          <?php if ($cats): ?>
+            <?php foreach ($cats as $i => $c): ?>
+              <label><input type="checkbox" value="<?php echo $i; ?>"> <?php echo e($c['name']); ?></label>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p class="hint">No categories yet.</p>
+          <?php endif; ?>
+        </div>
+        <?php if ($cats): ?><button type="button" class="btn btn-sm nb-add" id="nb-add-cats">Add Selected</button><?php endif; ?>
       </div>
-      <?php endforeach; ?>
-    </div>
-    <label>Add New Menu Item</label>
-    <div id="new-rows">
-      <div class="menu-row menu-grid">
-        <input type="text" name="nlabel[]" placeholder="Label (e.g. About)">
-        <input type="text" name="nurl[]" placeholder="/page/about">
-        <select name="nparent[]" title="Parent item">
-          <?php echo menuParentOptions($allMenuItems, $depthMap, $descendants, []); ?>
-        </select>
-        <input type="number" name="norder[]" value="99" style="width:70px" title="Order">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="this.parentElement.remove()">Remove</button>
+
+      <div class="nav-builder-panel">
+        <h3>Menu Structure</h3>
+        <p class="hint" style="margin:-6px 0 10px">Drag the handle to reorder or nest. Categories are appended automatically at the top level on the public site.</p>
+        <ol id="menu-structure">
+          <?php menuBuilderDom($menuTreeNodes); ?>
+        </ol>
+        <div class="adm-actions"><button class="btn" type="submit">Save Menu</button></div>
       </div>
     </div>
-    <button type="button" class="btn btn-secondary btn-sm" onclick="addMenuRow()">+ Add Another</button>
-    <div class="adm-actions"><button class="btn" type="submit">Save Menu</button></div>
   </form>
 </div>
 
-<style>
-.menu-grid { display: grid; grid-template-columns: 1.1fr 1.6fr 1fr 70px auto; gap: 8px; align-items: center; }
-.menu-grid input[type="text"], .menu-grid select { width: 100%; }
-.menu-grid input[type="text"] { min-width: 0; }
-@media (max-width: 900px) { .menu-grid { grid-template-columns: 1fr 1fr; } .menu-grid .btn { grid-column: 1 / -1; } }
-</style>
-
-<script>
-function addMenuRow() {
-  var d = document.createElement('div');
-  d.className = 'menu-row menu-grid';
-  d.innerHTML = '<input type="text" name="nlabel[]" placeholder="Label"><input type="text" name="nurl[]" placeholder="/page/about"><select name="nparent[]" title="Parent item"><?php echo menuParentOptions($allMenuItems, $depthMap, $descendants, []); ?></select><input type="number" name="norder[]" value="99" style="width:70px" title="Order"><button type="button" class="btn btn-secondary btn-sm" onclick="this.parentElement.remove()">Remove</button>';
-  document.getElementById('new-rows').appendChild(d);
-}
-</script>
+<script id="menu-source-data" type="application/json"><?php echo $sourceData; ?></script>
+<script src="/assets/js/vendor/Sortable.min.js"></script>
+<script src="/assets/js/menu-builder.js"></script>
 <?php endif; ?>
 
 <?php if ($activeTab === 'seo'): ?>

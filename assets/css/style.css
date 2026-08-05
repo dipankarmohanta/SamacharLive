@@ -77,6 +77,27 @@ button { font-family: inherit; cursor: pointer; }
 .icon-btn { background: none; border: none; color: var(--secondary); font-size: 1.15rem; padding: 8px; border-radius: 8px; transition: background .2s; }
 .icon-btn:hover { background: var(--bg); }
 
+/* ---------- Header layout: Modern ---------- */
+.header-style-modern .site-header {
+  position: sticky; top: 0; z-index: 1000;
+  background: var(--header-bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.header-style-modern .site-header .container { justify-content: space-between; }
+.header-style-modern .modern-nav { display: flex; align-items: center; }
+.header-style-modern .nav-menu > li > a { color: var(--text); }
+.header-style-modern .nav-menu > li > a:hover,
+.header-style-modern .nav-menu > li.active > a { background: none; color: var(--primary); }
+.header-style-modern .nav-toggle { display: none; }
+
+/* ---------- Header layout: Compact ---------- */
+.header-style-compact .site-header { padding: 10px 0; }
+.header-style-compact .site-header .container { justify-content: space-between; }
+.header-style-compact .logo img { max-height: 40px; }
+.header-style-compact .logo-text { font-size: 1.45rem; }
+.header-style-compact .navbar { box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.header-style-compact .nav-menu > li > a { padding: 10px 12px; font-size: .86rem; }
+
 /* ---------- Navigation ---------- */
 .navbar { background: var(--nav-bg); color: var(--nav-text); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
 .navbar .container { display: flex; align-items: center; }
@@ -133,6 +154,14 @@ button { font-family: inherit; cursor: pointer; }
 @media (max-width: 900px) {
   .nav-toggle { display: block; }
   .navbar .container { flex-wrap: wrap; }
+  .header-style-modern .modern-nav { width: 100%; }
+  .header-style-modern .nav-toggle { display: block; }
+  .header-style-modern .nav-menu {
+    display: none; width: 100%; flex-direction: column; max-height: 75vh; overflow-y: auto;
+    background: var(--header-bg); border-top: 1px solid var(--border);
+  }
+  .header-style-modern .nav-menu.open { display: flex; }
+  .header-style-modern .nav-menu > li > a { color: var(--text); }
   .nav-menu {
     display: none; width: 100%; flex-direction: column; max-height: 75vh; overflow-y: auto;
     background: var(--nav-bg); border-top: 1px solid rgba(255,255,255,.15);
@@ -332,6 +361,34 @@ button { font-family: inherit; cursor: pointer; }
 .newsletter input { flex: 1; border: none; padding: 10px 14px; font-size: .85rem; outline: none; }
 .newsletter button { background: var(--primary); border: none; color: #fff; padding: 0 16px; font-weight: 700; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.12); padding: 16px 0; font-size: .8rem; text-align: center; }
+
+/* ---------- Footer layout: Minimal ---------- */
+.footer-style-minimal .site-footer { text-align: center; }
+.footer-style-minimal .footer-minimal {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 46px 0 30px;
+}
+.footer-style-minimal .footer-brand {
+  font-family: var(--font-serif); font-size: 1.7rem; font-weight: 800; color: #fff;
+}
+.footer-style-minimal .footer-tagline { font-size: .9rem; opacity: .8; }
+.footer-style-minimal .footer-social { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+.footer-style-minimal .footer-social a { color: rgba(255,255,255,.75); font-size: .88rem; }
+.footer-style-minimal .footer-social a:hover { color: var(--accent); }
+.footer-style-minimal .footer-contact { font-size: .82rem; opacity: .7; }
+.footer-style-minimal .footer-bottom { border-top: none; padding-top: 6px; }
+
+/* ---------- Footer layout: Rich ---------- */
+.footer-style-rich .footer-rich-news { text-align: center; padding: 36px 0 8px; }
+.footer-style-rich .footer-rich-news .newsletter { max-width: 520px; margin: 0 auto; }
+.footer-style-rich .footer-rich-note { font-size: .8rem; opacity: .75; margin-top: 10px; }
+.footer-style-rich .footer-grid { padding-top: 28px; }
+.footer-style-rich .footer-rich-social {
+  display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+  padding: 18px 0 4px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,.12);
+}
+.footer-style-rich .footer-rich-social a { color: rgba(255,255,255,.75); font-size: .86rem; }
+.footer-style-rich .footer-rich-social a:hover { color: var(--accent); }
 
 /* ---------- 404 / maintenance ---------- */
 .error-page { text-align: center; padding: 90px 20px; }

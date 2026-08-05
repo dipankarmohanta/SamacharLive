@@ -25,8 +25,8 @@ A lightweight, secure, responsive news portal built with PHP 8 + MySQL/MariaDB. 
 - Static pages (About, Contact, Privacy...)
 - Users: create reporters/editors/admins, enable/disable, reset passwords
 - E-paper issues: upload PDF + cover, edit, hide, delete
-- **Theme customization**: primary/secondary/accent colors, header layout, breaking ticker on/off
-- **Navigation customization**: WordPress-style menu builder with unlimited parent/child sub-menus (label / URL / parent / order)
+- **Theme customization**: primary/secondary/accent colors, 3 header designs (Classic / Modern / Compact) and 3 footer designs (Classic / Minimal / Rich) with visual pickers, breaking ticker on/off
+- **Navigation customization**: WordPress-style drag-and-drop menu builder — reorder and nest items into unlimited-depth drop-down sub-menus from a two-panel UI (label / URL / indent / outdent / remove)
 
 **Reporter panel** (limited to posting news)
 - Submit news (with the same TinyMCE visual editor) that goes to `pending` review
@@ -126,8 +126,8 @@ Default login: `admin` / `Admin@1234` (change it immediately).
 ## Theme & Navigation
 
 Admin -> Settings:
-- **Theme** tab: pick brand colors (live preview), header layout, ticker toggle
-- **Navigation** tab: WordPress-style hierarchical menu builder — set a **Parent** item to turn any entry into a drop-down sub-menu (unlimited depth), plus label / URL / order; add or remove items
+- **Theme** tab: pick brand colors (live preview), choose from 3 header designs and 3 footer designs (visual picker cards), ticker toggle
+- **Navigation** tab: WordPress-style drag-and-drop menu builder — add custom links, pages, or categories from the left panel, then drag items in the right panel to reorder or nest them into drop-down sub-menus (up to 3 levels deep); label / URL editing, indent / outdent, and remove
 - Categories are appended to the nav automatically after menu items (top level)
 - Sub-menus render as hover dropdowns on desktop and expand inline on mobile
 
