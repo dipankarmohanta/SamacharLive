@@ -16,6 +16,7 @@ A lightweight, secure, responsive news portal built with PHP 8 + MySQL/MariaDB. 
 - Page-by-page online viewer with zoom controls
 - Upload a PDF and pages are auto-rendered to images (via `pdftoppm`)
 - Automatic cover image + page count; PDF download + prev/next issue navigation
+- Admin on/off toggle to hide the E-paper feature when not required (links hidden, `/epaper` returns 404, excluded from the sitemap)
 
 **Admin panel**
 - Dashboard with stats
@@ -27,6 +28,7 @@ A lightweight, secure, responsive news portal built with PHP 8 + MySQL/MariaDB. 
 - E-paper issues: upload PDF + cover, edit, hide, delete
 - **Theme customization**: primary/secondary/accent colors, 3 header designs (Classic / Modern / Compact) and 3 footer designs (Classic / Minimal / Rich) with visual pickers, breaking ticker on/off
 - **Navigation customization**: WordPress-style drag-and-drop menu builder — reorder and nest items into unlimited-depth drop-down sub-menus from a two-panel UI (label / URL / indent / outdent / remove)
+- **Advertisements**: image/banner ads with validity dates, third-party script integrations (Meta pixel, Google AdSense, analytics), and a master on/off switch with placement selection
 
 **Reporter panel** (limited to posting news)
 - Submit news (with the same TinyMCE visual editor) that goes to `pending` review
@@ -80,6 +82,8 @@ php install.php --fresh      # drop & recreate tables first
 
 Default login: `admin` / `Admin@1234` (change it immediately).
 
+**Upgrading an existing install**: run `php migrate.php` once to add any new columns/tables (e.g. the `ads` and `ad_integrations` tables).
+
 ## Directory Structure
 
 ```
@@ -87,7 +91,7 @@ Default login: `admin` / `Admin@1234` (change it immediately).
 ├── config.php           Database + environment config
 ├── install.php          CLI installer
 ├── .htaccess            Rewrites, caching, PHP limits
-├── app/                 Core (DB, Security, Auth, Settings, Epaper, Router, routes/)
+├── app/                 Core (DB, Security, Auth, Settings, Epaper, Ads, Router, routes/)
 ├── views/               Public templates (header, footer, partials, 404...)
 ├── assets/              CSS, JS, images
 ├── admin/               Admin panel
@@ -103,8 +107,10 @@ Default login: `admin` / `Admin@1234` (change it immediately).
 | Publish news          |  yes  |  yes   |    no    |
 | Manage categories     |  yes  |  yes   |    no    |
 | Manage pages, epaper  |  yes  |  yes   |    no    |
+| Manage advertisements |  yes  |  yes   |    no    |
 | Manage users          |  yes  |  no    |    no    |
 | Theme & nav settings  |  yes  |  no    |    no    |
+| Ad settings           |  yes  |  no    |    no    |
 
 \* Reporter submissions are saved as `pending` and require an editor/admin to publish.
 
@@ -122,6 +128,14 @@ Default login: `admin` / `Admin@1234` (change it immediately).
 1. Admin -> Epaper -> upload a PDF (+ optional cover image).
 2. Pages are rendered automatically into the online viewer.
 3. Cover image defaults to page 1. Page count is detected automatically.
+4. To switch the feature off, use Settings -> General -> Feature Settings.
+
+## Advertisements
+
+Admin -> Advertisements:
+- **Ad Management**: create image or HTML/JS banner ads with a name, notes, placement and validity dates (valid from / renew-until). Ads only render while active and inside their date window; the list warns when an ad has expired.
+- **3rd Party Integration**: add Meta Pixel, Google AdSense, analytics or any custom script with a name and position (head / top of body / bottom of body). Scripts are injected into every public page and toggled per item.
+- **Ad Settings**: master switch to enable or disable all advertisements, plus checkboxes choosing where ads are inserted — header, homepage (below hero), category pages, article top/bottom, sidebar top/bottom, and footer.
 
 ## Theme & Navigation
 
