@@ -17,15 +17,19 @@ $navItems = [
     ['url' => 'pages.php',              'label' => 'Pages', 'icon' => '&#128196;'],
     ['url' => 'users.php',              'label' => 'Users', 'icon' => '&#128101;'],
     ['url' => 'settings.php',           'label' => 'Theme & Nav', 'icon' => '&#9881;'],
-    ['group' => 'Advertisements'],
-    ['url' => 'ads.php',                'label' => 'Ad Management', 'icon' => '&#128142;'],
-    ['url' => 'ads_integrations.php',   'label' => '3rd Party Integration', 'icon' => '&#129309;'],
-    ['url' => 'ads_settings.php',       'label' => 'Ad Settings', 'icon' => '&#9881;'],
+];
+
+$adItems = [
+    ['url' => 'ads.php',              'label' => 'Ad Management', 'icon' => '&#128142;'],
+    ['url' => 'ads_integrations.php', 'label' => '3rd Party Integration', 'icon' => '&#129309;'],
+    ['url' => 'ads_settings.php',     'label' => 'Ad Settings', 'icon' => '&#9881;'],
 ];
 $userArea = $_SERVER['SCRIPT_NAME'] ?? '';
 $active = basename($userArea);
 if ($active === 'news.php' && ($_GET['flag'] ?? '') === 'breaking') { $active = 'news.php?flag=breaking'; }
 if ($active === 'news.php' && ($_GET['flag'] ?? '') === 'featured') { $active = 'news.php?flag=featured'; }
+$adActive = false;
+foreach ($adItems as $ad) { if ($active === $ad['url']) { $adActive = true; } }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,23 +40,44 @@ if ($active === 'news.php' && ($_GET['flag'] ?? '') === 'featured') { $active = 
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="<?php echo e(favicon_url()); ?>">
 <link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/admin.css?v=20260806">
+<link rel="stylesheet" href="/assets/css/admin.css?v=20260807">
 </head>
 <body class="adm-body">
 <div class="adm-wrapper">
   <aside class="adm-sidebar">
-    <div class="brand"><?php echo e(setting('site_name', 'News')); ?> <span>Admin</span></div>
+    <div class="brand">
+      <span class="brand-mark">&#128240;</span>
+      <span class="brand-text"><?php echo e(setting('site_name', 'News')); ?> <em>Admin</em></span>
+    </div>
     <nav>
       <?php foreach ($navItems as $item): ?>
-        <?php if (isset($item['group'])): ?>
-          <div class="nav-group-label"><?php echo e($item['group']); ?></div>
-        <?php continue; endif; ?>
         <?php $file = $item['url']; ?>
-        <?php if (!$isAdmin && in_array($file, ['users.php', 'settings.php', 'ads_settings.php'], true)) { continue; } ?>
-        <a href="/admin/<?php echo e($file); ?>" class="<?php echo $active === $file ? 'active' : ''; ?>">
-          <?php echo $item['icon']; ?> <span><?php echo $item['label']; ?></span>
+        <?php if (!$isAdmin && in_array($file, ['users.php', 'settings.php'], true)) { continue; } ?>
+        <a href="/admin/<?php echo e($file); ?>" class="nav-item<?php echo $active === $file ? ' active' : ''; ?>">
+          <span class="nav-icon"><?php echo $item['icon']; ?></span>
+          <span class="nav-label"><?php echo $item['label']; ?></span>
         </a>
       <?php endforeach; ?>
+
+      <div class="nav-section<?php echo $adActive ? ' open' : ''; ?>" id="nav-ad">
+        <button type="button" class="nav-item nav-toggle" aria-expanded="<?php echo $adActive ? 'true' : 'false'; ?>" aria-controls="nav-ad-menu">
+          <span class="nav-icon">&#128142;</span>
+          <span class="nav-label">Advertisements</span>
+          <span class="nav-chevron">&#9662;</span>
+        </button>
+        <ul class="nav-submenu" id="nav-ad-menu">
+          <?php foreach ($adItems as $ad): ?>
+            <?php $file = $ad['url']; ?>
+            <?php if (!$isAdmin && $file === 'ads_settings.php') { continue; } ?>
+            <li>
+              <a href="/admin/<?php echo e($file); ?>" class="<?php echo $active === $file ? 'active' : ''; ?>">
+                <span class="nav-sub-icon"><?php echo $ad['icon']; ?></span>
+                <span class="nav-label"><?php echo $ad['label']; ?></span>
+              </a>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
     </nav>
     <div class="user-box">
       <strong><?php echo e($currentUser['display_name'] ?: $currentUser['username']); ?></strong><br>

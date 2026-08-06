@@ -1,14 +1,35 @@
 /* Admin & Reporter panel styles */
 .adm-body { background: #f1f3f6; min-height: 100vh; display: block; }
 .adm-wrapper { display: flex; min-height: 100vh; }
-.adm-sidebar { width: 240px; background: #1a1a2e; color: #cfd2e6; flex-shrink: 0; display: flex; flex-direction: column; }
-.adm-sidebar .brand { padding: 20px 18px; font-weight: 800; font-size: 1.1rem; color: #fff; border-bottom: 1px solid rgba(255,255,255,.08); }
-.adm-sidebar .brand span { color: #f9a825; }
-.adm-sidebar nav { padding: 12px 0; flex: 1; overflow-y: auto; }
-.adm-sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 11px 18px; color: #cfd2e6; font-size: .9rem; font-weight: 500; transition: all .15s; border-left: 3px solid transparent; }
-.adm-sidebar nav a:hover { background: rgba(255,255,255,.06); color: #fff; }
-.adm-sidebar nav a.active { background: rgba(255,255,255,.09); border-left-color: #f9a825; color: #fff; }
-.adm-sidebar .nav-group-label { padding: 18px 18px 4px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #7c82a1; }
+.adm-sidebar { width: 252px; background: linear-gradient(180deg, #131a2c 0%, #1a1a2e 100%); color: #c7cde2; flex-shrink: 0; display: flex; flex-direction: column; }
+.adm-sidebar .brand { position: relative; display: flex; align-items: center; gap: 10px; padding: 22px 20px 18px; font-weight: 800; font-size: 1.05rem; color: #fff; }
+.adm-sidebar .brand::after { content: ''; position: absolute; left: 20px; right: 20px; bottom: 0; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #f9a825, rgba(249,168,37,.1)); }
+.adm-sidebar .brand-mark { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 9px; background: rgba(249,168,37,.16); color: #f9a825; font-size: 1rem; flex-shrink: 0; }
+.adm-sidebar .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+.adm-sidebar .brand-text em { font-style: normal; font-weight: 600; font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; color: #f9a825; }
+.adm-sidebar nav { padding: 14px 10px; flex: 1; overflow-y: auto; }
+.adm-sidebar nav::-webkit-scrollbar { width: 5px; }
+.adm-sidebar nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+
+/* Nav item (link or toggle button) */
+.adm-sidebar .nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; color: #c7cde2; font-size: .9rem; font-weight: 500; font-family: inherit; text-decoration: none; border: 0; background: transparent; cursor: pointer; text-align: left; border-radius: 10px; transition: background .15s, color .15s, transform .15s; }
+.adm-sidebar .nav-item:hover { background: rgba(255,255,255,.07); color: #fff; transform: translateX(2px); }
+.adm-sidebar .nav-item.active { background: linear-gradient(90deg, rgba(198,40,40,.28), rgba(249,168,37,.1)); color: #fff; box-shadow: inset 0 0 0 1px rgba(249,168,37,.28); }
+.adm-sidebar .nav-icon { width: 22px; text-align: center; font-size: 1rem; flex-shrink: 0; }
+.adm-sidebar .nav-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Collapsible Advertisement section */
+.adm-sidebar .nav-toggle .nav-chevron { margin-left: auto; font-size: .68rem; color: #8b93ad; transition: transform .2s; flex-shrink: 0; }
+.adm-sidebar .nav-section.open .nav-chevron { transform: rotate(180deg); }
+.adm-sidebar .nav-section.open .nav-toggle { background: rgba(255,255,255,.05); color: #fff; }
+.adm-sidebar .nav-submenu { list-style: none; margin: 4px 0 8px; padding: 0; max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+.adm-sidebar .nav-section.open .nav-submenu { max-height: 260px; }
+.adm-sidebar .nav-submenu li + li { margin-top: 2px; }
+.adm-sidebar .nav-submenu li a { display: flex; align-items: center; gap: 12px; padding: 9px 12px 9px 34px; color: #a7aecb; font-size: .85rem; font-weight: 500; text-decoration: none; border-radius: 8px; transition: background .15s, color .15s; }
+.adm-sidebar .nav-submenu li a:hover { background: rgba(255,255,255,.06); color: #fff; }
+.adm-sidebar .nav-submenu li a.active { background: rgba(249,168,37,.14); color: #ffd98a; }
+.adm-sidebar .nav-sub-icon { width: 18px; text-align: center; flex-shrink: 0; font-size: .9rem; }
+
 .adm-sidebar .user-box { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: .8rem; }
 .adm-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .adm-topbar { background: #fff; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,.06); position: sticky; top: 0; z-index: 100; }
@@ -188,9 +209,19 @@ thead th.sortable.desc::after { content: '\2193'; opacity: 1; color: #c62828; }
 
 @media (max-width: 860px) {
   .adm-sidebar { width: 64px; }
-  .adm-sidebar .brand span, .adm-sidebar nav a span, .adm-sidebar .user-box { display: none; }
-  .adm-sidebar .nav-group-label { display: none; }
-  .adm-sidebar nav a { justify-content: center; padding: 12px; }
+  .adm-sidebar .brand { justify-content: center; padding: 18px 0; }
+  .adm-sidebar .brand-text, .adm-sidebar .brand::after { display: none; }
+  .adm-sidebar nav { padding: 10px 8px; }
+  .adm-sidebar .nav-item { justify-content: center; padding: 12px 0; }
+  .adm-sidebar .nav-icon { width: auto; }
+  .adm-sidebar .nav-label, .adm-sidebar .nav-chevron, .adm-sidebar .user-box { display: none; }
+  .adm-sidebar .nav-section { position: relative; }
+  .adm-sidebar .nav-submenu { position: absolute; left: 56px; top: -6px; width: 235px; padding: 8px; border-radius: 12px; background: #202b47; box-shadow: 0 10px 30px rgba(0,0,0,.45); max-height: 0; overflow: hidden; z-index: 60; }
+  .adm-sidebar .nav-section.open .nav-submenu { max-height: 260px; }
+  .adm-sidebar .nav-submenu li a { justify-content: flex-start; padding: 10px 14px; }
+  .adm-sidebar .nav-submenu .nav-label { display: inline; }
+  .adm-sidebar .nav-submenu .nav-sub-icon { width: 18px; }
+  .adm-sidebar nav a.active { box-shadow: none; }
   .adm-form .row, .adm-form .row-3, .adm-form .row-4 { grid-template-columns: 1fr; }
   .adm-table-wrap { overflow-x: auto; }
 }
