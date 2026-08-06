@@ -27,7 +27,7 @@
       <h4>Quick Links</h4>
       <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/epaper">Epaper</a></li>
+        <?php if (setting('epaper_enabled', '1')): ?><li><a href="/epaper">Epaper</a></li><?php endif; ?>
         <li><a href="/search">Search</a></li>
       </ul>
     </div>

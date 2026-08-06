@@ -53,6 +53,7 @@ switch ($route) {
         break;
 
     case 'epaper':
+        if (!$settings->bool('epaper_enabled', true)) { Security::notFound('E-paper is not available.'); }
         require BASE_PATH . '/app/routes/epaper.php';
         break;
 

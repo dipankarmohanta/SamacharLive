@@ -8,6 +8,7 @@
 .adm-sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 11px 18px; color: #cfd2e6; font-size: .9rem; font-weight: 500; transition: all .15s; border-left: 3px solid transparent; }
 .adm-sidebar nav a:hover { background: rgba(255,255,255,.06); color: #fff; }
 .adm-sidebar nav a.active { background: rgba(255,255,255,.09); border-left-color: #f9a825; color: #fff; }
+.adm-sidebar .nav-group-label { padding: 18px 18px 4px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #7c82a1; }
 .adm-sidebar .user-box { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: .8rem; }
 .adm-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .adm-topbar { background: #fff; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,.06); position: sticky; top: 0; z-index: 100; }
@@ -73,8 +74,9 @@
 
 /* Preset picker cards (header / footer design) */
 .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-top: 6px; }
-.preset-card { position: relative; border: 2px solid #e5e7eb; border-radius: 10px; padding: 10px 10px 12px; cursor: pointer; text-align: center; transition: border-color .15s, box-shadow .15s; }
-.preset-card:hover { border-color: #c9ced6; }
+.preset-card { position: relative; border: 2px solid #e5e7eb; border-radius: 10px; padding: 10px 10px 12px; cursor: pointer; text-align: center; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.preset-card:hover:not(.active) { border-color: #c62828; box-shadow: 0 4px 14px rgba(0,0,0,.1); transform: translateY(-2px); }
+.preset-card:hover .preset-thumb { border-color: #d1d5db; }
 .preset-card.active { border-color: #c62828; box-shadow: 0 0 0 3px rgba(198,40,40,.12); }
 .preset-card input { position: absolute; opacity: 0; pointer-events: none; }
 .preset-thumb { display: block; height: 74px; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; background: #fff; margin-bottom: 8px; }
@@ -139,6 +141,12 @@
 
 .preview-img { max-width: 180px; max-height: 120px; border-radius: 8px; border: 1px solid #e5e7eb; }
 
+/* Ad settings placement picker */
+.adm-form .row-2-placement { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px; }
+.placement-check { display: flex; align-items: center; gap: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; font-size: .85rem; cursor: pointer; }
+.placement-check:hover { border-color: #c62828; }
+.placement-check input { width: auto; }
+
 /* Collapsible SEO settings section */
 .seo-box { border: 1px solid #e5e7eb; border-radius: 10px; margin-top: 18px; background: #fafbfc; overflow: hidden; }
 .seo-box summary { list-style: none; cursor: pointer; padding: 13px 16px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: .92rem; user-select: none; }
@@ -181,6 +189,7 @@ thead th.sortable.desc::after { content: '\2193'; opacity: 1; color: #c62828; }
 @media (max-width: 860px) {
   .adm-sidebar { width: 64px; }
   .adm-sidebar .brand span, .adm-sidebar nav a span, .adm-sidebar .user-box { display: none; }
+  .adm-sidebar .nav-group-label { display: none; }
   .adm-sidebar nav a { justify-content: center; padding: 12px; }
   .adm-form .row, .adm-form .row-3, .adm-form .row-4 { grid-template-columns: 1fr; }
   .adm-table-wrap { overflow-x: auto; }

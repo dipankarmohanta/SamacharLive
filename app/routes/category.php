@@ -54,6 +54,8 @@ require BASE_PATH . '/views/header.php';
   </div>
 </div>
 
+<?php Ads::render('category_top'); ?>
+
 <div class="container">
   <div class="layout">
     <div>

@@ -77,6 +77,9 @@ if (isset($_GET['edit'])) {
 $pageTitle = 'Epaper';
 require_once __DIR__ . '/includes/layout.php';
 ?>
+<?php if (!setting('epaper_enabled', '1')): ?>
+<div class="alert alert-info">The E-paper feature is currently disabled. Public visitors get a 404 page and E-paper links are hidden. You can still manage issues here, then enable the feature in Settings &rarr; General &rarr; Feature Settings.</div>
+<?php endif; ?>
 <div class="adm-card">
   <h2><?php echo $edit ? 'Edit Issue' : 'Upload New Issue'; ?></h2>
   <form method="post" enctype="multipart/form-data" class="adm-form">

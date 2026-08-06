@@ -106,6 +106,9 @@ function menu_tree(): array
 
     $items = [];
     foreach ($rows as $m) {
+        if (!setting('epaper_enabled', '1') && ($m['url'] === '/epaper' || str_starts_with($m['url'], '/epaper'))) {
+            continue;
+        }
         $items[] = [
             'id' => (int) $m['id'],
             'label' => $m['label'],

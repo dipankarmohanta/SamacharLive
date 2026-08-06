@@ -21,6 +21,8 @@ foreach (DB::fetchAll("SELECT tags FROM news WHERE status='published' AND tags I
 $allTags = array_slice(array_keys($allTags), 0, 12);
 ?>
 <aside class="sidebar">
+  <?php Ads::render('sidebar_top'); ?>
+
   <?php if ($sidebarPopular): ?>
   <div class="widget">
     <h3>Most Read</h3>
@@ -73,4 +75,6 @@ $allTags = array_slice(array_keys($allTags), 0, 12);
       <?php if (setting('youtube')): ?><a class="yt" href="<?php echo e(setting('youtube')); ?>" target="_blank" rel="noopener nofollow">YouTube</a><?php endif; ?>
     </div>
   </div>
+
+  <?php Ads::render('sidebar_bottom'); ?>
 </aside>

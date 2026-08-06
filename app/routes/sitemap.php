@@ -10,7 +10,9 @@ echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
 // Static
 echo '<url><loc>' . e($base . '/') . '</loc><priority>1.0</priority></url>' . "\n";
-echo '<url><loc>' . e($base . '/epaper') . '</loc><priority>0.9</priority></url>' . "\n";
+if (setting('epaper_enabled', '1')) {
+    echo '<url><loc>' . e($base . '/epaper') . '</loc><priority>0.9</priority></url>' . "\n";
+}
 
 // Categories
 foreach (DB::fetchAll("SELECT slug, name FROM categories WHERE status = 1 AND noindex = 0") as $c) {

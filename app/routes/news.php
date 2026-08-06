@@ -92,6 +92,7 @@ require BASE_PATH . '/views/header.php';
 <script type="application/ld+json"><?php echo $breadcrumbJson; ?></script>
 
 <div class="container">
+  <?php Ads::render('article_top'); ?>
   <article class="article">
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a> &raquo;
@@ -140,6 +141,8 @@ require BASE_PATH . '/views/header.php';
       <a class="ln" target="_blank" rel="noopener nofollow" href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo e(urlencode($canonical)); ?>">LinkedIn</a>
     </div>
   </article>
+
+  <?php Ads::render('article_bottom'); ?>
 </div>
 
 <?php if ($related): ?>

@@ -137,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (isset($_POST['remove_favicon'])) { $generalValues['site_favicon'] = ''; }
     $generalValues['maintenance_mode'] = isset($_POST['maintenance_mode']) ? '1' : '0';
+    $generalValues['epaper_enabled'] = isset($_POST['epaper_enabled']) ? '1' : '0';
     Settings::update($generalValues);
     flash_set('success', 'Site settings saved.');
     header('Location: settings.php?tab=general');
@@ -210,6 +211,19 @@ require_once __DIR__ . '/includes/layout.php';
       <input type="checkbox" name="maintenance_mode" value="1" <?php echo setting('maintenance_mode') ? 'checked' : ''; ?>> Enable maintenance mode (public site shows maintenance notice)
     </div>
     <div class="adm-actions"><button class="btn" type="submit">Save General Settings</button></div>
+  </form>
+</div>
+
+<div class="adm-card">
+  <h2>Feature Settings</h2>
+  <form method="post" class="adm-form">
+    <?php echo Security::csrfField(); ?>
+    <input type="hidden" name="tab" value="general">
+    <div class="mt-1" style="display:flex; gap:8px; align-items:center">
+      <input type="checkbox" name="epaper_enabled" value="1" <?php echo setting('epaper_enabled', '1') ? 'checked' : ''; ?>> Enable E-paper feature
+    </div>
+    <p class="hint">Turn off to hide E-paper links on the public site and make /epaper return a 404 page. Existing issues stay saved in the admin panel.</p>
+    <div class="adm-actions"><button class="btn" type="submit">Save Feature Settings</button></div>
   </form>
 </div>
 <?php endif; ?>

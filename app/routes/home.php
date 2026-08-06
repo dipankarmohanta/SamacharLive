@@ -82,6 +82,8 @@ require BASE_PATH . '/views/header.php';
   </div>
 </div>
 
+<?php Ads::render('home_top'); ?>
+
 <section class="section">
   <div class="container">
     <div class="section-head">

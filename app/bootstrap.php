@@ -9,6 +9,7 @@ require_once __DIR__ . '/Security.php';
 require_once __DIR__ . '/Settings.php';
 require_once __DIR__ . '/Auth.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/Ads.php';
 
 Security::sendSecurityHeaders();
 

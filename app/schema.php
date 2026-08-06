@@ -102,6 +102,35 @@ CREATE TABLE IF NOT EXISTS epapers (
   UNIQUE KEY uq_date (issue_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS ads (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  info VARCHAR(500) DEFAULT NULL,
+  type ENUM('image','banner') NOT NULL DEFAULT 'image',
+  image VARCHAR(255) DEFAULT NULL,
+  link_url VARCHAR(500) DEFAULT NULL,
+  code TEXT DEFAULT NULL,
+  placement VARCHAR(40) NOT NULL DEFAULT 'home_top',
+  start_date DATE DEFAULT NULL,
+  end_date DATE DEFAULT NULL,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_placement (placement),
+  KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ad_integrations (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  provider VARCHAR(40) NOT NULL DEFAULT 'custom',
+  position ENUM('head','body_top','body_bottom') NOT NULL DEFAULT 'head',
+  code TEXT NOT NULL,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_position (position),
+  KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS login_attempts (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(100) DEFAULT NULL,

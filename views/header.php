@@ -86,7 +86,7 @@ $today = date('l, F j, Y');
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?php echo asset('css/style.css?v=2'); ?>">
+<link rel="stylesheet" href="<?php echo asset('css/style.css?v=3'); ?>">
 <?php require BASE_PATH . '/views/theme.php'; ?>
 <?php if ($analytics = setting('google_analytics')): ?>
 <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo e($analytics); ?>"></script>
@@ -97,8 +97,10 @@ $today = date('l, F j, Y');
   gtag('config', '<?php echo e($analytics); ?>');
 </script>
 <?php endif; ?>
+<?php Ads::renderIntegrations('head'); ?>
 </head>
 <body class="header-style-<?php echo e($headerStyle); ?> footer-style-<?php echo e($footerStyle); ?>">
+<?php Ads::renderIntegrations('body_top'); ?>
 
 <div class="offline-indicator" id="offline-indicator" role="status" hidden>You are offline &mdash; showing cached content</div>
 
@@ -118,5 +120,7 @@ $today = date('l, F j, Y');
   </div>
 </div>
 <?php endif; ?>
+
+<?php Ads::render('header'); ?>
 
 <main>

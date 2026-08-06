@@ -7,16 +7,20 @@ if (!isset($pageTitle)) { $pageTitle = 'Admin'; }
 $isAdmin = $currentUser['role'] === 'admin';
 
 $navItems = [
-    'dashboard.php'        => ['label' => 'Dashboard', 'icon' => '&#9632;'],
-    'news.php'             => ['label' => 'News', 'icon' => '&#128240;'],
-    'news.php?flag=breaking' => ['label' => 'Ticker', 'icon' => '&#128227;'],
-    'news.php?flag=featured' => ['label' => 'Featured', 'icon' => '&#11088;'],
-    'news_edit.php'        => ['label' => 'Add News', 'icon' => '&#10133;'],
-    'categories.php'       => ['label' => 'Categories', 'icon' => '&#128193;'],
-    'epapers.php'          => ['label' => 'Epaper', 'icon' => '&#128218;'],
-    'pages.php'            => ['label' => 'Pages', 'icon' => '&#128196;'],
-    'users.php'            => ['label' => 'Users', 'icon' => '&#128101;'],
-    'settings.php'         => ['label' => 'Theme & Nav', 'icon' => '&#9881;'],
+    ['url' => 'dashboard.php',          'label' => 'Dashboard', 'icon' => '&#9632;'],
+    ['url' => 'news.php',               'label' => 'News', 'icon' => '&#128240;'],
+    ['url' => 'news.php?flag=breaking', 'label' => 'Ticker', 'icon' => '&#128227;'],
+    ['url' => 'news.php?flag=featured', 'label' => 'Featured', 'icon' => '&#11088;'],
+    ['url' => 'news_edit.php',          'label' => 'Add News', 'icon' => '&#10133;'],
+    ['url' => 'categories.php',         'label' => 'Categories', 'icon' => '&#128193;'],
+    ['url' => 'epapers.php',            'label' => 'Epaper', 'icon' => '&#128218;'],
+    ['url' => 'pages.php',              'label' => 'Pages', 'icon' => '&#128196;'],
+    ['url' => 'users.php',              'label' => 'Users', 'icon' => '&#128101;'],
+    ['url' => 'settings.php',           'label' => 'Theme & Nav', 'icon' => '&#9881;'],
+    ['group' => 'Advertisements'],
+    ['url' => 'ads.php',                'label' => 'Ad Management', 'icon' => '&#128142;'],
+    ['url' => 'ads_integrations.php',   'label' => '3rd Party Integration', 'icon' => '&#129309;'],
+    ['url' => 'ads_settings.php',       'label' => 'Ad Settings', 'icon' => '&#9881;'],
 ];
 $userArea = $_SERVER['SCRIPT_NAME'] ?? '';
 $active = basename($userArea);
@@ -32,15 +36,19 @@ if ($active === 'news.php' && ($_GET['flag'] ?? '') === 'featured') { $active = 
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="<?php echo e(favicon_url()); ?>">
 <link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/admin.css?v=20260805">
+<link rel="stylesheet" href="/assets/css/admin.css?v=20260806">
 </head>
 <body class="adm-body">
 <div class="adm-wrapper">
   <aside class="adm-sidebar">
     <div class="brand"><?php echo e(setting('site_name', 'News')); ?> <span>Admin</span></div>
     <nav>
-      <?php foreach ($navItems as $file => $item): ?>
-        <?php if (!$isAdmin && in_array($file, ['users.php'], true)) { continue; } ?>
+      <?php foreach ($navItems as $item): ?>
+        <?php if (isset($item['group'])): ?>
+          <div class="nav-group-label"><?php echo e($item['group']); ?></div>
+        <?php continue; endif; ?>
+        <?php $file = $item['url']; ?>
+        <?php if (!$isAdmin && in_array($file, ['users.php', 'settings.php', 'ads_settings.php'], true)) { continue; } ?>
         <a href="/admin/<?php echo e($file); ?>" class="<?php echo $active === $file ? 'active' : ''; ?>">
           <?php echo $item['icon']; ?> <span><?php echo $item['label']; ?></span>
         </a>

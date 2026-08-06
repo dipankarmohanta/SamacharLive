@@ -15,6 +15,7 @@ $pages = DB::fetchAll("SELECT title, slug FROM pages WHERE status = 1 ORDER BY i
 
 <footer class="site-footer footer-style-<?php echo e($footerStyle); ?>">
   <div class="container">
+    <?php Ads::render('footer'); ?>
     <?php require BASE_PATH . '/views/partials/footer_' . $footerStyle . '.php'; ?>
     <?php if ($footerText !== ''): ?>
     <div class="footer-bottom"><?php echo $footerText; ?></div>
@@ -30,5 +31,6 @@ $pages = DB::fetchAll("SELECT title, slug FROM pages WHERE status = 1 ORDER BY i
     });
   }
 </script>
+<?php Ads::renderIntegrations('body_bottom'); ?>
 </body>
 </html>
