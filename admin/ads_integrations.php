@@ -17,6 +17,8 @@ $positions = [
     'body_bottom' => 'Bottom of body (before </body>)',
 ];
 
+Ads::ensureSchema();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Security::csrfValidate();
     $action = $_POST['action'] ?? '';
@@ -37,29 +39,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'position' => $position,
                 'code' => $code,
             ];
-            if ($id) {
-                DB::run('UPDATE ad_integrations SET name=:name, provider=:provider, position=:position, code=:code WHERE id=:id', $vals + ['id' => $id]);
-                flash_set('success', 'Integration updated.');
-            } else {
-                DB::run('INSERT INTO ad_integrations (name, provider, position, code) VALUES (:name,:provider,:position,:code)', $vals);
-                flash_set('success', 'Integration created.');
+            try {
+                if ($id) {
+                    DB::run('UPDATE ad_integrations SET name=:name, provider=:provider, position=:position, code=:code WHERE id=:id', $vals + ['id' => $id]);
+                    flash_set('success', 'Integration updated.');
+                } else {
+                    DB::run('INSERT INTO ad_integrations (name, provider, position, code) VALUES (:name,:provider,:position,:code)', $vals);
+                    flash_set('success', 'Integration created.');
+                }
+            } catch (Throwable $e) {
+                flash_set('error', 'Could not save integration: ' . $e->getMessage());
             }
         }
     } elseif ($action === 'toggle' || $action === 'delete') {
         $id = (int) ($_POST['id'] ?? 0);
-        if ($action === 'delete') {
-            DB::run('DELETE FROM ad_integrations WHERE id = :id', ['id' => $id]);
-            flash_set('success', 'Integration deleted.');
-        } else {
-            DB::run('UPDATE ad_integrations SET status = 1 - status WHERE id = :id', ['id' => $id]);
-            flash_set('success', 'Integration status changed.');
+        try {
+            if ($action === 'delete') {
+                DB::run('DELETE FROM ad_integrations WHERE id = :id', ['id' => $id]);
+                flash_set('success', 'Integration deleted.');
+            } else {
+                DB::run('UPDATE ad_integrations SET status = 1 - status WHERE id = :id', ['id' => $id]);
+                flash_set('success', 'Integration status changed.');
+            }
+        } catch (Throwable $e) {
+            flash_set('error', 'Could not update integration: ' . $e->getMessage());
         }
     }
     header('Location: ads_integrations.php');
     exit;
 }
 
-$rows = DB::fetchAll('SELECT * FROM ad_integrations ORDER BY id ASC');
+$rows = [];
+$listError = null;
+try {
+    $rows = DB::fetchAll('SELECT * FROM ad_integrations ORDER BY id ASC');
+} catch (Throwable $e) {
+    $listError = $e->getMessage();
+}
 $editRow = null;
 if (isset($_GET['edit'])) {
     $editRow = DB::fetch('SELECT * FROM ad_integrations WHERE id = :id', ['id' => (int) $_GET['edit']]);
@@ -112,6 +128,9 @@ require_once __DIR__ . '/includes/layout.php';
 
 <div class="adm-card">
   <h2>Active Integrations</h2>
+  <?php if ($listError): ?>
+    <div class="alert alert-error">Could not load integrations: <?php echo e($listError); ?></div>
+  <?php endif; ?>
   <div class="adm-table-wrap">
   <table class="adm-table">
     <thead><tr><th>Name</th><th>Provider</th><th>Position</th><th>Status</th><th>Actions</th></tr></thead>

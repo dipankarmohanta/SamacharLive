@@ -9,6 +9,7 @@ if ($currentUser['role'] !== 'admin') {
 }
 
 $placements = Ads::placements();
+Ads::ensureSchema();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Security::csrfValidate();

@@ -5,6 +5,7 @@
 require_once __DIR__ . '/includes/init.php';
 
 $placements = Ads::placements();
+Ads::ensureSchema();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Security::csrfValidate();
@@ -96,7 +97,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$ads = DB::fetchAll('SELECT * FROM ads ORDER BY placement ASC, id DESC');
+$ads = [];
+$adsError = null;
+try {
+    $ads = DB::fetchAll('SELECT * FROM ads ORDER BY placement ASC, id DESC');
+} catch (Throwable $e) {
+    $adsError = $e->getMessage();
+}
 $editAd = null;
 if (isset($_GET['edit'])) {
     $editAd = DB::fetch('SELECT * FROM ads WHERE id = :id', ['id' => (int) $_GET['edit']]);
@@ -180,6 +187,9 @@ require_once __DIR__ . '/includes/layout.php';
 
 <div class="adm-card">
   <h2>All Advertisements</h2>
+  <?php if ($adsError): ?>
+    <div class="alert alert-error">Could not load advertisements: <?php echo e($adsError); ?></div>
+  <?php endif; ?>
   <div class="adm-table-wrap">
   <table class="adm-table">
     <thead><tr><th>Preview</th><th>Name</th><th>Type</th><th>Placement</th><th>Validity</th><th>Status</th><th>Actions</th></tr></thead>
