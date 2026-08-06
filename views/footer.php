@@ -22,6 +22,13 @@ $pages = DB::fetchAll("SELECT title, slug FROM pages WHERE status = 1 ORDER BY i
   </div>
 </footer>
 
-<script src="<?php echo asset('js/main.js?v=1'); ?>"></script>
+<script src="<?php echo asset('js/main.js?v=2'); ?>"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function () {
+      /* SW registration blocked (e.g. insecure context) - site still works. */
+    });
+  }
+</script>
 </body>
 </html>

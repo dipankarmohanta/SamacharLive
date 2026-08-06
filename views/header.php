@@ -56,6 +56,8 @@ $today = date('l, F j, Y');
 <link rel="canonical" href="<?php echo e($canonical); ?>">
 <meta name="robots" content="<?php echo $noIndex ? 'noindex, nofollow' : 'index, follow'; ?>">
 <meta name="theme-color" content="<?php echo e(setting('theme_primary', '#c62828')); ?>">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/img/icon-192.png">
 <meta property="og:site_name" content="<?php echo e($siteName); ?>">
 <meta property="og:type" content="<?php echo e($ogType); ?>">
 <meta property="og:locale" content="<?php echo e($ogLocale); ?>">
@@ -84,7 +86,7 @@ $today = date('l, F j, Y');
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?php echo asset('css/style.css?v=1'); ?>">
+<link rel="stylesheet" href="<?php echo asset('css/style.css?v=2'); ?>">
 <?php require BASE_PATH . '/views/theme.php'; ?>
 <?php if ($analytics = setting('google_analytics')): ?>
 <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo e($analytics); ?>"></script>
@@ -97,6 +99,8 @@ $today = date('l, F j, Y');
 <?php endif; ?>
 </head>
 <body class="header-style-<?php echo e($headerStyle); ?> footer-style-<?php echo e($footerStyle); ?>">
+
+<div class="offline-indicator" id="offline-indicator" role="status" hidden>You are offline &mdash; showing cached content</div>
 
 <?php require BASE_PATH . '/views/partials/header_' . $headerStyle . '.php'; ?>
 

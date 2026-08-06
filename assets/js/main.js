@@ -49,4 +49,17 @@
       items.style.animation = 'none';
     }
   }
+
+  /* Offline detection: grey out content and show a banner while offline */
+  var offlineBar = document.getElementById('offline-indicator');
+  function syncOnlineState() {
+    var offline = !navigator.onLine;
+    document.documentElement.classList.toggle('is-offline', offline);
+    if (offlineBar) { offlineBar.hidden = !offline; }
+  }
+  if (offlineBar) {
+    window.addEventListener('online', syncOnlineState);
+    window.addEventListener('offline', syncOnlineState);
+    syncOnlineState();
+  }
 })();

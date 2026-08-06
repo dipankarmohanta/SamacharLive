@@ -444,6 +444,24 @@ html.dark .site-footer { background: #0a0c11; }
 html.dark .card, html.dark .widget, html.dark .hero-card { background: var(--surface); }
 html.dark .article-body { color: #d5d9e0; }
 
+/* ---------- Offline / PWA ---------- */
+.offline-indicator {
+  background: #3a3f47;
+  color: #fff;
+  text-align: center;
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 9px 16px;
+}
+.offline-indicator[hidden] { display: none; }
+
+main, .site-footer { transition: filter .25s ease, opacity .25s ease; }
+html.is-offline main,
+html.is-offline .site-footer {
+  filter: grayscale(1);
+  opacity: .72;
+}
+
 /* ---------- Admin & Reporter shared ---------- */
 .auth-body { background: linear-gradient(135deg, var(--secondary), #3a3a5e); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .auth-card { background: #fff; border-radius: 14px; box-shadow: var(--shadow-lg); width: 100%; max-width: 400px; padding: 34px; }
