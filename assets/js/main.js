@@ -62,4 +62,45 @@
     window.addEventListener('offline', syncOnlineState);
     syncOnlineState();
   }
+
+  /* Share buttons: copy link + native share (covers Instagram, FB, etc.) */
+  function shareFallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  function shareCopy(btn) {
+    var url = btn.getAttribute('data-share-url');
+    function done() {
+      var original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(function () { btn.textContent = original; }, 2000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, function () { shareFallbackCopy(url, done); });
+    } else {
+      shareFallbackCopy(url, done);
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.share-copy'), function (btn) {
+    btn.addEventListener('click', function () { shareCopy(btn); });
+  });
+  var igBtn = document.querySelector('.share-instagram');
+  if (igBtn) {
+    igBtn.addEventListener('click', function () {
+      var url = igBtn.getAttribute('data-share-url');
+      var title = igBtn.getAttribute('data-share-title');
+      if (navigator.share) {
+        navigator.share({ title: title, url: url }).catch(function () {});
+      } else {
+        shareCopy(igBtn);
+      }
+    });
+  }
 })();

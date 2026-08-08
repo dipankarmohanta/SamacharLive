@@ -135,10 +135,14 @@ require BASE_PATH . '/views/header.php';
 
     <div class="share">
       <span>Share:</span>
-      <a class="fb" target="_blank" rel="noopener nofollow" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo e(urlencode($canonical)); ?>">Facebook</a>
-      <a class="tw" target="_blank" rel="noopener nofollow" href="https://twitter.com/intent/tweet?url=<?php echo e(urlencode($canonical)); ?>&text=<?php echo e(urlencode($item['title'])); ?>">X</a>
-      <a class="wa" target="_blank" rel="noopener nofollow" href="https://wa.me/?text=<?php echo e(urlencode($item['title'] . ' ' . $canonical)); ?>">WhatsApp</a>
-      <a class="ln" target="_blank" rel="noopener nofollow" href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo e(urlencode($canonical)); ?>">LinkedIn</a>
+      <a class="fb" target="_blank" rel="noopener nofollow" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo e(urlencode($canonical)); ?>" aria-label="Share on Facebook">Facebook</a>
+      <a class="tw" target="_blank" rel="noopener nofollow" href="https://twitter.com/intent/tweet?url=<?php echo e(urlencode($canonical)); ?>&text=<?php echo e(urlencode($item['title'])); ?>" aria-label="Share on X">X</a>
+      <a class="wa" target="_blank" rel="noopener nofollow" href="https://wa.me/?text=<?php echo e(urlencode($item['title'] . ' ' . $canonical)); ?>" aria-label="Share on WhatsApp">WhatsApp</a>
+      <a class="tg" target="_blank" rel="noopener nofollow" href="https://t.me/share/url?url=<?php echo e(urlencode($canonical)); ?>&text=<?php echo e(urlencode($item['title'])); ?>" aria-label="Share on Telegram">Telegram</a>
+      <a class="ln" target="_blank" rel="noopener nofollow" href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo e(urlencode($canonical)); ?>" aria-label="Share on LinkedIn">LinkedIn</a>
+      <a class="em" target="_blank" rel="noopener nofollow" href="mailto:?subject=<?php echo e(rawurlencode($item['title'])); ?>&body=<?php echo e(rawurlencode($canonical)); ?>" aria-label="Share by email">Email</a>
+      <button type="button" class="share-copy cp" data-share-url="<?php echo e($canonical); ?>" aria-label="Copy link">Copy Link</button>
+      <button type="button" class="share-instagram ig" data-share-url="<?php echo e($canonical); ?>" data-share-title="<?php echo e($item['title']); ?>" aria-label="Share on Instagram">Instagram</button>
     </div>
   </article>
 

@@ -23,7 +23,7 @@ $pages = DB::fetchAll("SELECT title, slug FROM pages WHERE status = 1 ORDER BY i
   </div>
 </footer>
 
-<script src="<?php echo asset('js/main.js?v=2'); ?>"></script>
+<script src="<?php echo asset('js/main.js?v=3'); ?>"></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(function () {
