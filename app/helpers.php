@@ -128,7 +128,6 @@ function category_tree(): array
 function menu_tree(): array
 {
     $rows = DB::fetchAll('SELECT * FROM menus WHERE status = 1 ORDER BY sort_order ASC, id ASC');
-    $cats = DB::fetchAll('SELECT name, slug FROM categories WHERE status = 1 ORDER BY sort_order ASC');
 
     $items = [];
     foreach ($rows as $m) {
@@ -142,16 +141,6 @@ function menu_tree(): array
             'parent_id' => (int) $m['parent_id'],
             'sort' => (int) $m['sort_order'],
             'kind' => 'menu',
-        ];
-    }
-    foreach ($cats as $c) {
-        $items[] = [
-            'id' => 'cat-' . $c['slug'],
-            'label' => $c['name'],
-            'url' => '/category/' . $c['slug'],
-            'parent_id' => 0,
-            'sort' => 0,
-            'kind' => 'category',
         ];
     }
 

@@ -457,7 +457,7 @@ require_once __DIR__ . '/includes/layout.php';
 
       <div class="nav-builder-panel">
         <h3>Menu Structure</h3>
-        <p class="hint" style="margin:-6px 0 10px">Drag the handle to reorder or nest. Categories are appended automatically at the top level on the public site.</p>
+        <p class="hint" style="margin:-6px 0 10px">Drag the handle to reorder or nest. Categories are not added automatically — add them from the Categories panel on the left.</p>
         <ol id="menu-structure">
           <?php menuBuilderDom($menuTreeNodes); ?>
         </ol>

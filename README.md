@@ -146,7 +146,7 @@ Admin -> Settings:
 - **Theme** tab: pick brand colors (live preview), choose from 3 header designs and 3 footer designs (visual picker cards), ticker toggle
 - **Navigation** tab: WordPress-style drag-and-drop menu builder — add custom links, pages, or categories from the left panel, then drag items in the right panel to reorder or nest them into drop-down sub-menus (up to 3 levels deep); label / URL editing, indent / outdent, and remove
 - **Domains** tab: manage custom domains (see below)
-- Categories are appended to the nav automatically after menu items (top level)
+- The nav shows exactly the items you configure — categories (or any pages/links) are added manually from the Categories panel
 - Sub-menus render as hover dropdowns on desktop and expand inline on mobile
 
 ## Custom Domains
