@@ -124,7 +124,7 @@ require BASE_PATH . '/views/header.php';
     <?php endif; ?>
 
     <div class="article-body">
-      <?php echo $item['content']; ?>
+      <?php echo Security::sanitizeHtml($item['content']); ?>
     </div>
 
     <?php if ($tags): ?>

@@ -41,7 +41,7 @@ require BASE_PATH . '/views/header.php';
   <article class="page-content">
     <nav class="breadcrumb"><a href="/">Home</a> &raquo; <?php echo e($page['title']); ?></nav>
     <h1><?php echo e($page['title']); ?></h1>
-    <div class="body"><?php echo $page['content']; ?></div>
+    <div class="body"><?php echo Security::sanitizeHtml($page['content']); ?></div>
   </article>
 </div>
 <?php require BASE_PATH . '/views/footer.php'; ?>

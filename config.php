@@ -21,6 +21,11 @@ define('APP_ENV', 'production');        // production | development
 define('APP_DEBUG', false);
 define('APP_TIMEZONE', 'Asia/Kolkata');
 
+// Optional: comma-separated list of hosts allowed for canonical/og/sitemap URLs.
+// Leave empty to accept any syntactically valid Host header. Subdomain wildcards
+// are supported with a leading dot, e.g. '.example.com'.
+define('APP_ALLOWED_HOSTS', '');
+
 // Session security hardening
 ini_set('session.use_strict_mode', '1');
 ini_set('session.use_only_cookies', '1');

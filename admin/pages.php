@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) ($_POST['id'] ?? 0);
         $title = trim((string) ($_POST['title'] ?? ''));
         $slug = Security::slugify(trim((string) ($_POST['slug'] ?? '')) ?: $title);
-        $content = (string) ($_POST['content'] ?? '');
+        $content = Security::sanitizeHtml((string) ($_POST['content'] ?? ''));
         $seoTitle = trim((string) ($_POST['seo_title'] ?? ''));
         $seoDescription = trim((string) ($_POST['seo_description'] ?? ''));
         $canonicalUrl = trim((string) ($_POST['canonical_url'] ?? ''));

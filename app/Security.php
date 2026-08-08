@@ -42,6 +42,187 @@ final class Security
         return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     }
 
+    /**
+     * Sanitize untrusted rich HTML (news/pages body) against stored XSS.
+     * Allowlist-based: DOMDocument parses the input, forbidden elements are
+     * removed, disallowed elements are unwrapped, and every attribute is
+     * validated. A regex scrub runs last as defense-in-depth.
+     */
+    public static function sanitizeHtml(?string $html): string
+    {
+        if ($html === null || trim($html) === '') {
+            return '';
+        }
+
+        $allowedTags = [
+            'p'=>1,'div'=>1,'br'=>1,'hr'=>1,
+            'h2'=>1,'h3'=>1,'h4'=>1,'h5'=>1,'h6'=>1,
+            'strong'=>1,'b'=>1,'em'=>1,'i'=>1,'u'=>1,'s'=>1,'strike'=>1,
+            'ul'=>1,'ol'=>1,'li'=>1,'blockquote'=>1,'pre'=>1,'code'=>1,
+            'a'=>1,'img'=>1,'figure'=>1,'figcaption'=>1,
+            'table'=>1,'thead'=>1,'tbody'=>1,'tfoot'=>1,'tr'=>1,'td'=>1,'th'=>1,
+            'span'=>1,'mark'=>1,'sub'=>1,'sup'=>1,'small'=>1,'del'=>1,'ins'=>1,
+            'video'=>1,'audio'=>1,'source'=>1,
+        ];
+        $allowedAttrs = [
+            'class'=>1,'id'=>1,'title'=>1,'alt'=>1,'width'=>1,'height'=>1,
+            'colspan'=>1,'rowspan'=>1,'href'=>1,'src'=>1,'target'=>1,'rel'=>1,'style'=>1,
+            'controls'=>1,'poster'=>1,'preload'=>1,'autoplay'=>1,'loop'=>1,'muted'=>1,'type'=>1,
+        ];
+        $urlAttrs = ['href'=>1,'src'=>1];
+
+        $dom = new DOMDocument();
+        $prev = libxml_use_internal_errors(true);
+        $ok = $dom->loadHTML('<?xml encoding="UTF-8"?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NONET);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prev);
+        if (!$ok) {
+            return '';
+        }
+
+        $xpath = new DOMXPath($dom);
+        $forbidden = '//script | //style | //iframe | //object | //embed | //link | //meta | //base | //form | //input | //button | //textarea | //select | //option | //svg | //math | //template | //noscript | //track | //frame | //frameset | //applet | //param | //portal | //title | //head | //body | //html | //xml | //annotation-xml | //foreignObject';
+        foreach ($xpath->query($forbidden) as $node) {
+            $node->parentNode && $node->parentNode->removeChild($node);
+        }
+
+        foreach ($xpath->query('//*') as $el) {
+            $tag = strtolower($el->nodeName);
+            if (!isset($allowedTags[$tag])) {
+                // Unwrap disallowed element, keeping its children.
+                $frag = $dom->createDocumentFragment();
+                while ($el->firstChild) {
+                    $frag->appendChild($el->firstChild);
+                }
+                $el->parentNode->replaceChild($frag, $el);
+                continue;
+            }
+            $toRemove = [];
+            foreach ($el->attributes as $attr) {
+                $name = strtolower($attr->nodeName);
+                if (!isset($allowedAttrs[$name])) {
+                    $toRemove[] = $attr;
+                    continue;
+                }
+                if ($name === 'style') {
+                    $clean = self::sanitizeStyle($attr->nodeValue);
+                    if ($clean === '') {
+                        $toRemove[] = $attr;
+                    } else {
+                        $attr->nodeValue = $clean;
+                    }
+                } elseif (isset($urlAttrs[$name])) {
+                    $clean = self::safeUrl($attr->nodeValue, $name === 'src');
+                    if ($clean === '') {
+                        $toRemove[] = $attr;
+                    } else {
+                        $attr->nodeValue = $clean;
+                    }
+                } elseif ($name === 'id' || $name === 'class') {
+                    $v = trim(preg_replace('/[^a-zA-Z0-9_\- :]/', '', $attr->nodeValue));
+                    if ($v === '') {
+                        $toRemove[] = $attr;
+                    } else {
+                        $attr->nodeValue = $v;
+                    }
+                }
+            }
+            foreach ($toRemove as $attr) {
+                $el->removeAttributeNode($attr);
+            }
+        }
+
+        $out = '';
+        foreach ($dom->childNodes as $node) {
+            if ($node->nodeType === XML_PI_NODE) {
+                continue;
+            }
+            $out .= $dom->saveHTML($node);
+        }
+
+        return self::scrubHtml($out);
+    }
+
+    /** Validate a URL attribute value. Empty string means "reject". */
+    private static function safeUrl(string $url, bool $isImg): string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+        $lower = strtolower($url);
+        if (preg_match('/[\x00-\x20\x7f]/', $url)) {
+            return '';
+        }
+        if (preg_match('/^(javascript|vbscript|data|file|about|chrome|blob|filesystem|view-source):/i', $lower)) {
+            if ($isImg && preg_match('/^data:image\/(png|jpe?g|gif|webp);base64,/i', $lower)) {
+                return $url;
+            }
+            return '';
+        }
+        if (strpos($url, '//') === 0) {
+            return 'https:' . $url;
+        }
+        if (preg_match('~^(https?:)?//~i', $url) || str_starts_with($url, '/') || str_starts_with($url, '#')
+            || preg_match('/^(mailto|tel):/i', $url)) {
+            return $url;
+        }
+        return '';
+    }
+
+    /** Allowlist inline CSS properties. Empty string means "reject". */
+    private static function sanitizeStyle(string $css): string
+    {
+        $css = trim($css);
+        if ($css === '') {
+            return '';
+        }
+        if (preg_match('/(url\s*\(|expression\s*\(|javascript:|vbscript:|data:|behavior:|-moz-binding|@import|@charset|<|>|\))/i', $css)) {
+            return '';
+        }
+        $allowedProps = [
+            'color'=>1,'background-color'=>1,'text-align'=>1,'font-weight'=>1,'font-style'=>1,
+            'text-decoration'=>1,'font-size'=>1,'padding'=>1,'padding-top'=>1,'padding-right'=>1,
+            'padding-bottom'=>1,'padding-left'=>1,'margin'=>1,'margin-top'=>1,'margin-right'=>1,
+            'margin-bottom'=>1,'margin-left'=>1,'width'=>1,'height'=>1,'max-width'=>1,'max-height'=>1,
+            'min-width'=>1,'min-height'=>1,'border'=>1,'border-radius'=>1,'display'=>1,'float'=>1,
+            'vertical-align'=>1,'line-height'=>1,'background'=>1,'letter-spacing'=>1,'word-spacing'=>1,
+        ];
+        $safe = [];
+        foreach (preg_split('/;/', $css) as $part) {
+            if (strpos($part, ':') === false) {
+                continue;
+            }
+            [$prop, $val] = explode(':', $part, 2);
+            $prop = strtolower(trim($prop));
+            $val = trim($val);
+            if (!isset($allowedProps[$prop]) || $val === '') {
+                continue;
+            }
+            if (preg_match('/([{};]|\/\*|\\\\)/', $val)) {
+                continue;
+            }
+            if (!preg_match('/^[\w\s#.%,\-\/()"\'"]+$/i', $val)) {
+                continue;
+            }
+            $safe[] = $prop . ':' . $val;
+        }
+        return implode(';', $safe);
+    }
+
+    /** Defense-in-depth regex scrub of serialized output. */
+    private static function scrubHtml(string $html): string
+    {
+        $html = preg_replace('/<!--.*?-->/s', '', $html);
+        $html = preg_replace('/<!\[CDATA\[.*?\]\]>/s', '', $html);
+        $html = preg_replace('/<\?(?:php)?\s?/i', '', $html);
+        $html = preg_replace('/<\s*(\/)?\s*(script|iframe|object|embed|link|meta|base|form|input|button|textarea|select|option|optgroup|svg|math|template|noscript|track|frame|frameset|applet|param|portal|style|title|body|head|html|xml|annotation-xml|foreignobject|isindex)\b[^>]*>/i', '', $html);
+        $html = preg_replace('/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html);
+        $html = preg_replace('/(javascript|vbscript)\s*:/i', 'blocked:', $html);
+        $html = preg_replace('/(\s(src|href|background|action|formaction)\s*=\s*)(["\']?)data:(?!image\/)/i', '$1$2blocked:', $html);
+        return $html;
+    }
+
     /** Truncate a string to $limit chars on word boundary. */
     public static function truncate(?string $text, int $limit = 120, string $suffix = '...'): string
     {

@@ -88,13 +88,14 @@ $today = date('l, F j, Y');
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo asset('css/style.css?v=3'); ?>">
 <?php require BASE_PATH . '/views/theme.php'; ?>
-<?php if ($analytics = setting('google_analytics')): ?>
-<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo e($analytics); ?>"></script>
+<?php $analyticsId = (string) setting('google_analytics'); ?>
+<?php if ($analyticsId !== '' && preg_match('/^[A-Za-z0-9_\-\.]+$/', $analyticsId)): ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo e($analyticsId); ?>"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', '<?php echo e($analytics); ?>');
+  gtag('config', '<?php echo e($analyticsId); ?>');
 </script>
 <?php endif; ?>
 <?php Ads::renderIntegrations('head'); ?>

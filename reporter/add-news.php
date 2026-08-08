@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim((string) ($_POST['title'] ?? ''));
     $slug = Security::slugify(trim((string) ($_POST['slug'] ?? '')) ?: $title);
     $excerpt = trim((string) ($_POST['excerpt'] ?? ''));
-    $content = (string) ($_POST['content'] ?? '');
+    $content = Security::sanitizeHtml((string) ($_POST['content'] ?? ''));
     $categoryId = (int) ($_POST['category_id'] ?? 0);
     $tags = trim((string) ($_POST['tags'] ?? ''));
     $imageCaption = trim((string) ($_POST['image_caption'] ?? ''));
