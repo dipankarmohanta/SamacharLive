@@ -29,6 +29,7 @@ A lightweight, secure, responsive news portal built with PHP 8 + MySQL/MariaDB. 
 - **Theme customization**: primary/secondary/accent colors, 3 header designs (Classic / Modern / Compact) and 3 footer designs (Classic / Minimal / Rich) with visual pickers, breaking ticker on/off
 - **Navigation customization**: WordPress-style drag-and-drop menu builder — reorder and nest items into unlimited-depth drop-down sub-menus from a two-panel UI (label / URL / indent / outdent / remove)
 - **Advertisements**: image/banner ads with validity dates, third-party script integrations (Meta pixel, Google AdSense, analytics), and a master on/off switch with placement selection
+- **Custom domains**: manage the domain names the site should serve on from Settings (with subdomain wildcards); the matching domain is used for canonical/SEO URLs
 
 **Reporter panel** (limited to posting news)
 - Submit news (with the same TinyMCE visual editor) that goes to `pending` review
@@ -42,6 +43,8 @@ A lightweight, secure, responsive news portal built with PHP 8 + MySQL/MariaDB. 
 - Password hashing with `password_hash()` / `password_verify()`
 - Login brute-force throttling (per IP + per username)
 - Output escaping (XSS) + strict `Content-Security-Policy`
+- **Allowlist-based server-side HTML sanitization** of news/page content against stored XSS: a `DOMDocument` allowlist (tags, attributes, URL schemes, inline CSS properties) plus a regex scrub, applied both on save and on output
+- **Host-header validation**: `HTTP_HOST` is validated and matched against a configurable domain allowlist (`APP_ALLOWED_HOSTS` constant + Settings -> Domains) so canonical/og/sitemap URLs can't be poisoned by crafted Host headers
 - `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` headers
 - Upload validation: real MIME sniffing + image re-decode, random filenames, scripts blocked in `/uploads`
 - Session hardening: HttpOnly, SameSite=Lax, ID regeneration on login, idle timeout
@@ -117,7 +120,7 @@ Default login: `admin` / `Admin@1234` (change it immediately).
 ## SEO
 
 - Clean URLs: `/category/sports`, `/news/example-title`, `/epaper`
-- Per-page meta description + canonical URLs
+- Per-page meta description + canonical URLs (custom-domain aware)
 - Open Graph + Twitter Card tags
 - JSON-LD `NewsArticle` schema on articles
 - Auto-generated XML sitemap at `/sitemap`
@@ -137,13 +140,25 @@ Admin -> Advertisements:
 - **3rd Party Integration**: add Meta Pixel, Google AdSense, analytics or any custom script with a name and position (head / top of body / bottom of body). Scripts are injected into every public page and toggled per item.
 - **Ad Settings**: master switch to enable or disable all advertisements, plus checkboxes choosing where ads are inserted — header, homepage (below hero), category pages, article top/bottom, sidebar top/bottom, and footer.
 
-## Theme & Navigation
+## Theme, Navigation & Domains
 
 Admin -> Settings:
 - **Theme** tab: pick brand colors (live preview), choose from 3 header designs and 3 footer designs (visual picker cards), ticker toggle
 - **Navigation** tab: WordPress-style drag-and-drop menu builder — add custom links, pages, or categories from the left panel, then drag items in the right panel to reorder or nest them into drop-down sub-menus (up to 3 levels deep); label / URL editing, indent / outdent, and remove
+- **Domains** tab: manage custom domains (see below)
 - Categories are appended to the nav automatically after menu items (top level)
 - Sub-menus render as hover dropdowns on desktop and expand inline on mobile
+
+## Custom Domains
+
+Admin -> Settings -> **Domains** tab:
+
+- Add the domain names where the site should be reachable, one per line (comma-separated also works). Entries are validated on save.
+- Subdomain wildcards are supported with a leading dot: `.example.com` matches `example.com` and all of its subdomains.
+- The first listed domain is the **primary** domain, used for canonical/og/sitemap URLs whenever a visitor arrives on an unlisted address (this also keeps Host-header poisoning blocked).
+- The Status card shows your current host, the effective site URL, and the primary domain.
+- Point each domain's DNS at this server to complete the setup — the app accepts and serves the domain, but DNS and HTTPS routing are configured outside the app.
+- A hard-coded `APP_ALLOWED_HOSTS` constant in `config.php` is also supported and merges with the Settings list.
 
 ## Deployment Notes
 
