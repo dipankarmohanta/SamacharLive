@@ -9,7 +9,8 @@ if ($currentUser['role'] !== 'admin') {
 }
 
 $activeTab = $_GET['tab'] ?? 'general';
-$allowedTabs = ['general', 'theme', 'menu', 'seo', 'social'];
+$allowedTabs = ['general', 'theme', 'menu', 'seo', 'social', 'domains'];
+$primaryDomain = allowed_domains()[0] ?? (string) ($_SERVER['HTTP_HOST'] ?? 'localhost');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Security::csrfValidate();
@@ -114,6 +115,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    if ($tab === 'domains') {
+        $lines = preg_split('/[\r\n,]+/', (string) ($_POST['custom_domains'] ?? ''));
+        $clean = [];
+        $bad = false;
+        foreach ($lines as $line) {
+            $line = strtolower(trim($line));
+            if ($line === '') { continue; }
+            $line = preg_replace('~^https?://~i', '', $line);
+            $line = rtrim($line, '/');
+            if (!preg_match('/^\.?[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$/i', $line)) {
+                $bad = true;
+                break;
+            }
+            $clean[] = $line;
+        }
+        if ($bad) {
+            flash_set('error', 'One or more domains are invalid. Use plain hostnames like example.com, or a wildcard like .example.com (no http:// or ports).');
+            header('Location: settings.php?tab=domains');
+            exit;
+        }
+        Settings::update(['custom_domains' => implode("\n", array_unique($clean))]);
+        flash_set('success', 'Custom domains saved.');
+        header('Location: settings.php?tab=domains');
+        exit;
+    }
+
     // General tab: site info + logo upload
     $generalValues = [
         'site_name'    => trim((string) ($_POST['site_name'] ?? '')),
@@ -153,6 +180,7 @@ require_once __DIR__ . '/includes/layout.php';
   <a href="settings.php?tab=menu" class="<?php echo $activeTab === 'menu' ? 'active' : ''; ?>">Navigation</a>
   <a href="settings.php?tab=seo" class="<?php echo $activeTab === 'seo' ? 'active' : ''; ?>">SEO</a>
   <a href="settings.php?tab=social" class="<?php echo $activeTab === 'social' ? 'active' : ''; ?>">Social</a>
+  <a href="settings.php?tab=domains" class="<?php echo $activeTab === 'domains' ? 'active' : ''; ?>">Domains</a>
 </div>
 
 <?php if ($activeTab === 'general'): ?>
@@ -479,6 +507,32 @@ require_once __DIR__ . '/includes/layout.php';
     </div>
     <div class="adm-actions"><button class="btn" type="submit">Save Social Links</button></div>
   </form>
+</div>
+<?php endif; ?>
+
+<?php if ($activeTab === 'domains'): ?>
+<div class="adm-card">
+  <h2>Custom Domains</h2>
+  <p style="color:#6b7280; font-size:.85rem; margin-bottom:14px">Add the domain names where this site should be reachable. After you point each domain's DNS to this server, the site will load on it and use it for canonical and SEO URLs.</p>
+  <form method="post" class="adm-form">
+    <?php echo Security::csrfField(); ?>
+    <input type="hidden" name="tab" value="domains">
+    <label>Custom Domains</label>
+    <textarea name="custom_domains" rows="6" placeholder="example.com&#10;.example.org"><?php echo e(setting('custom_domains')); ?></textarea>
+    <p class="hint">One domain per line (comma-separated also works). The first one is the primary domain, used for canonical URLs when the site is visited on any unlisted address.</p>
+    <p class="hint">Subdomain wildcards are supported with a leading dot: <code>.example.com</code> matches <code>example.com</code> and all of its subdomains.</p>
+    <div class="adm-actions"><button class="btn" type="submit">Save Domains</button></div>
+  </form>
+</div>
+
+<div class="adm-card">
+  <h2>Status</h2>
+  <div style="display:flex; flex-direction:column; gap:8px; font-size:.9rem">
+    <span>You are viewing this site from: <code><?php echo e($_SERVER['HTTP_HOST'] ?? ''); ?></code></span>
+    <span>Effective site URL: <code><?php echo e(SITE_URL); ?></code></span>
+    <span>Primary (canonical) domain: <code><?php echo e($primaryDomain); ?></code></span>
+  </div>
+  <p class="hint" style="margin-top:10px">Canonical, og:url and sitemap links use the primary domain only when the visitor's host is not in the allowed list. Add a domain here before pointing its DNS at this server.</p>
 </div>
 <?php endif; ?>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

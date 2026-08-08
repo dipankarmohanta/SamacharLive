@@ -15,6 +15,32 @@ function setting(string $key, ?string $default = null): ?string
     return Settings::instance()->get($key, $default);
 }
 
+/**
+ * Allowed hosts for canonical/og/sitemap URLs.
+ * Merges the APP_ALLOWED_HOSTS constant with the DB-stored custom_domains
+ * setting (newline or comma separated). Entries may be exact hostnames or
+ * subdomain wildcards with a leading dot (e.g. .example.com).
+ */
+function allowed_domains(): array
+{
+    $list = [];
+    if (defined('APP_ALLOWED_HOSTS') && APP_ALLOWED_HOSTS !== '') {
+        foreach (explode(',', APP_ALLOWED_HOSTS) as $d) {
+            $d = strtolower(trim($d));
+            if ($d !== '') {
+                $list[] = $d;
+            }
+        }
+    }
+    foreach (preg_split('/[\r\n,]+/', (string) setting('custom_domains')) as $d) {
+        $d = strtolower(trim($d));
+        if ($d !== '') {
+            $list[] = $d;
+        }
+    }
+    return array_values(array_unique($list));
+}
+
 /** Relative asset URL. */
 function asset(string $path): string
 {
